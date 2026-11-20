@@ -10,6 +10,8 @@ export interface CursorList<T> {
   loadingMore: boolean;
   error: unknown;
   hasMore: boolean;
+  /** The server stopped the list early because the visitor is signed out. */
+  gated: boolean;
   loadMore: () => void;
   reload: () => void;
   mutate: (fn: (items: T[]) => T[]) => void;
@@ -29,6 +31,7 @@ export function useCursorList<T extends { id: string }>(
   const [loading, setLoading] = useState(enabled);
   const [loadingMore, setLoadingMore] = useState(false);
   const [error, setError] = useState<unknown>(null);
+  const [gated, setGated] = useState(false);
   const [tick, setTick] = useState(0);
 
   const fetchRef = useRef(fetchPage);
@@ -52,6 +55,7 @@ export function useCursorList<T extends { id: string }>(
     setItems([]);
     setNextCursor(null);
     setError(null);
+    setGated(false);
     setLoading(true);
 
     fetchRef
@@ -60,6 +64,7 @@ export function useCursorList<T extends { id: string }>(
         if (gen !== generation.current) return;
         setItems(page.items);
         setNextCursor(page.nextCursor);
+        setGated(page.gated === true);
         cursorRef.current = page.nextCursor;
       })
       .catch((e) => {
@@ -103,5 +108,5 @@ export function useCursorList<T extends { id: string }>(
   const reload = useCallback(() => setTick((t) => t + 1), []);
   const mutate = useCallback((fn: (items: T[]) => T[]) => setItems(fn), []);
 
-  return { items, loading, loadingMore, error, hasMore: nextCursor !== null, loadMore, reload, mutate };
+  return { items, loading, loadingMore, error, hasMore: nextCursor !== null, gated, loadMore, reload, mutate };
 }

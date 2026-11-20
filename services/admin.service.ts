@@ -6,6 +6,8 @@ export interface UserDetail {
   categoryPermissions: { categoryId: string; canPost: boolean }[];
   moderationHistory: Pick<ModerationRow, "id" | "work_id" | "action" | "reason" | "moderator_id" | "created_at">[];
   adminActivity: Pick<AuditRow, "id" | "admin_id" | "action" | "target_type" | "metadata" | "created_at">[];
+  /** false when the history database could not be reached; the lists above are then empty. */
+  historyAvailable?: boolean;
 }
 
 const authed = { auth: "required" as const };
@@ -18,6 +20,9 @@ export const adminService = {
   disable: (uid: string, reason?: string) => api.post<{ user: AdminUser }>(`/admin/users/${uid}/disable`, { reason }, authed),
   block: (uid: string, reason?: string) => api.post<{ user: AdminUser }>(`/admin/users/${uid}/block`, { reason }, authed),
   reactivate: (uid: string, reason?: string) => api.post<{ user: AdminUser }>(`/admin/users/${uid}/reactivate`, { reason }, authed),
+  /** Super admins only. */
+  verify: (uid: string) => api.put<{ user: AdminUser }>(`/admin/users/${uid}/verification`, undefined, authed),
+  unverify: (uid: string) => api.delete<{ user: AdminUser }>(`/admin/users/${uid}/verification`, authed),
   passwordReset: (uid: string) => api.post<{ sent: true }>(`/admin/users/${uid}/password-reset`, undefined, authed),
   setRole: (uid: string, role: Role) => api.put<{ user: AdminUser }>(`/admin/users/${uid}/role`, { role }, authed),
   setPermissions: (uid: string, permissions: Partial<Permissions>) => api.put<{ user: AdminUser }>(`/admin/users/${uid}/permissions`, { permissions }, authed),

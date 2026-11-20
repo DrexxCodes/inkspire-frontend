@@ -37,7 +37,7 @@ export function EngagementBar({ work, commentCount, onJumpToComments, sticky }: 
   }, [work.id, work.viewer.liked, work.likeCount, work.shareCount]);
 
   const toggleLike = async () => {
-    if (!requireSignIn() || pending.current) return;
+    if (!requireSignIn({ authorName: work.author.displayName }) || pending.current) return;
     pending.current = true;
     const nextLiked = !liked;
     const previous = { liked, likes };

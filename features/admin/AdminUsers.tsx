@@ -10,6 +10,7 @@ import type { AdminUser, Role } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
 import { EmptyState, ErrorState, LoadMore, Spinner } from "@/components/ui/feedback";
 import { Icon } from "@/components/ui/Icon";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { SelectField } from "@/components/ui/fields";
 import { UserDrawer } from "./UserDrawer";
 
@@ -68,7 +69,10 @@ export function AdminUsers() {
                     <div className="person">
                       <Avatar name={u.displayName} seed={u.username} src={u.profilePhotoUrl} size={36} squircle />
                       <div className="person__text">
-                        <div className="person__name">{u.displayName}</div>
+                        <div className="person__name name-line">
+                          <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{u.displayName}</span>
+                          {u.verified && <VerifiedBadge name={u.displayName} size={16} interactive={false} />}
+                        </div>
                         <div className="person__sub">@{u.username}</div>
                       </div>
                     </div>

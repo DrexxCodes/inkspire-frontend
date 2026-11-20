@@ -1,6 +1,6 @@
 "use client";
 
-import { useRouter, useSearchParams } from "next/navigation";
+import { usePathname, useRouter, useSearchParams } from "next/navigation";
 import { useCallback, useEffect, useState } from "react";
 import { worksService, type WorkSort } from "@/services/works.service";
 import { categoriesService } from "@/services/categories.service";
@@ -27,8 +27,12 @@ const isSort = (v: string | null): v is WorkSort => SORTS.some((s) => s.id === v
 
 export function DiscoverFeed() {
   const router = useRouter();
+  const pathname = usePathname();
   const { status: authStatus } = useAuth();
   const params = useSearchParams();
+  // Wait for the session check so a signed in reader is never served the signed out (limited) feed.
+  const authSettled = authStatus !== "loading";
+  const signedIn = authStatus === "ready";
   const sort: WorkSort = isSort(params.get("sort")) ? (params.get("sort") as WorkSort) : "latest";
   const category = params.get("category") ?? undefined;
   const [q, setQ] = useState(params.get("q") ?? "");
@@ -50,8 +54,11 @@ export function DiscoverFeed() {
   }, [debouncedQ, params, setParam]);
 
   const cats = useApi((s) => categoriesService.list(s), []);
-  const list = useCursorList<WorkDto>((cursor, signal) => worksService.discover({ cursor, sort, category, q: debouncedQ || undefined }, signal), [sort, category, debouncedQ]);
+  const list = useCursorList<WorkDto>((cursor, signal) => worksService.discover({ cursor, sort, category, q: debouncedQ || undefined }, signal), [sort, category, debouncedQ, signedIn], authSettled);
   const sentinel = useInfiniteTrigger(list.loadMore, list.hasMore && !list.loadingMore && !list.loading);
+
+  const loading = list.loading || !authSettled;
+  const returnTo = encodeURIComponent(`${pathname}${params.size ? `?${params}` : ""}`);
 
   const categoryTabs = [{ id: "all", label: "All" }, ...(cats.data?.items.map((c) => ({ id: c.id, label: c.name })) ?? [])];
 
@@ -72,15 +79,15 @@ export function DiscoverFeed() {
       <Tabs items={categoryTabs} value={category ?? "all"} onChange={(id) => setParam("category", id === "all" ? undefined : id)} label="Category" />
       <SegmentedControl items={SORTS} value={sort} onChange={(id) => setParam("sort", id === "latest" ? undefined : id)} label="Sort works" />
 
-      <div className="feed" aria-busy={list.loading}>
-        {list.loading && [0, 1, 2].map((i) => <WorkCardSkeleton key={i} />)}
+      <div className="feed" aria-busy={loading}>
+        {loading && [0, 1, 2].map((i) => <WorkCardSkeleton key={i} />)}
         {list.items.map((w) => (
           <WorkCard key={w.id} work={w} />
         ))}
       </div>
 
       {list.error != null && <ErrorState error={list.error} onRetry={list.reload} />}
-      {!list.loading && !list.error && list.items.length === 0 && (
+      {!loading && !list.error && list.items.length === 0 && (
         <EmptyState
           icon={debouncedQ ? "search" : "pen"}
           title={debouncedQ ? "No works match your search" : "Nothing published here yet"}
@@ -94,6 +101,17 @@ export function DiscoverFeed() {
         >
           {debouncedQ ? "Try a different word or clear the category." : "Check back soon, or be the first to publish."}
         </EmptyState>
+      )}
+      {!loading && list.gated && (
+        <div className="feed-gate">
+          <p className="feed-gate__title">Log in or create your account to view more</p>
+          <div className="feed-gate__actions">
+            <ButtonLink href={`/auth/login?next=${returnTo}`} variant="secondary">
+              Log in
+            </ButtonLink>
+            <ButtonLink href={`/auth/register?next=${returnTo}`}>Create account</ButtonLink>
+          </div>
+        </div>
       )}
       <div ref={sentinel} aria-hidden="true" />
       {list.loadingMore && (

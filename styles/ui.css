@@ -226,3 +226,22 @@ button.chip:hover, a.chip:hover { background: var(--surface-2); }
 
 .scroll-x { overflow-x: auto; scrollbar-width: none; margin: 0 calc(var(--gutter) * -1); padding: 0 var(--gutter); }
 .scroll-x::-webkit-scrollbar { display: none; }
+
+/* Verification badge */
+.verified { display: inline-flex; align-items: center; justify-content: center; flex: none; color: var(--blue); line-height: 0; vertical-align: middle; }
+.verified--btn { position: relative; padding: 0; border: 0; background: none; cursor: pointer; border-radius: 50%; transition: transform 0.12s ease; }
+.verified--btn::after { content: ""; position: absolute; inset: -8px; }
+.verified--btn:hover { transform: scale(1.1); }
+.verified--btn:focus-visible { outline: 3px solid var(--focus); outline-offset: 2px; }
+.verified-layer { position: relative; z-index: 1; display: inline-flex; }
+.name-line { display: flex; align-items: center; gap: 6px; min-width: 0; }
+.comment__meta .verified { align-self: center; }
+.verified-sheet { display: grid; gap: 16px; justify-items: start; }
+.verified-sheet__seal { padding: 4px 0 0; }
+.verified-sheet p { font-family: var(--font-read); font-size: 1.125rem; line-height: 1.6; color: var(--ink); }
+.verified-sheet p.muted { color: var(--muted); }
+
+/* Signed out visitors reach the end of the free feed */
+.feed-gate { display: grid; justify-items: center; gap: 14px; text-align: center; padding: 28px 20px; border-radius: var(--r-card); background: var(--surface); border: 1px solid var(--line); box-shadow: var(--shadow-1); }
+.feed-gate__title { font-family: var(--font-read); font-size: 1.375rem; font-weight: 600; line-height: 1.25; text-wrap: balance; }
+.feed-gate__actions { display: flex; gap: 10px; flex-wrap: wrap; justify-content: center; }

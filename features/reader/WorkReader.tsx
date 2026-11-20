@@ -10,6 +10,7 @@ import { cn } from "@/utils/cn";
 import { looksLikePoem, splitBlocks } from "@/utils/content";
 import { formatDate, readingMinutes } from "@/utils/format";
 import { Avatar } from "@/components/ui/Avatar";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { ButtonLink } from "@/components/ui/Button";
 import { Banner, ErrorState, Skeleton, Spinner } from "@/components/ui/feedback";
 import { AuthorCard } from "@/components/work/AuthorCard";
@@ -59,9 +60,12 @@ export function WorkReader({ workId }: { workId: string }) {
         <div className="reader__byline">
           <Avatar name={work.author.displayName} seed={work.author.username} src={work.author.profilePhotoUrl} size={44} />
           <div className="reader__byline-text">
-            <Link href={`/profile/${work.author.username}`} className="reader__byline-name">
-              {work.author.displayName}
-            </Link>
+            <div className="name-line">
+              <Link href={`/profile/${work.author.username}`} className="reader__byline-name">
+                {work.author.displayName}
+              </Link>
+              {work.author.verified && <VerifiedBadge name={work.author.displayName} />}
+            </div>
             <div className="reader__byline-meta">
               {formatDate(work.publishedAt ?? work.createdAt)} · {readingMinutes(work.totalBytes)} min read
             </div>
@@ -114,7 +118,7 @@ export function WorkReader({ workId }: { workId: string }) {
 
       {work.status === "published" && (
         <div ref={commentsRef} style={{ marginTop: 40 }}>
-          <CommentThread workId={work.id} canModerate={!!permissions?.moderateWorks} onCountChange={(d) => setCommentDelta((n) => n + d)} />
+          <CommentThread workId={work.id} authorName={work.author.displayName} canModerate={!!permissions?.moderateWorks} onCountChange={(d) => setCommentDelta((n) => n + d)} />
         </div>
       )}
     </article>

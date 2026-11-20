@@ -6,9 +6,11 @@ import { useState, type ReactNode } from "react";
 import { useAuth } from "@/stores/auth-store";
 import { useUnreadCount } from "@/hooks/useUnreadCount";
 import { cn } from "@/utils/cn";
+import { isOwnProfilePath } from "@/lib/nav";
 import { Avatar } from "@/components/ui/Avatar";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon, type IconName } from "@/components/ui/Icon";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { NotificationsDrawer } from "./NotificationsDrawer";
 
 interface NavEntry {
@@ -37,6 +39,8 @@ export function AppShell({ children, rail, wide }: Props) {
   const [notifOpen, setNotifOpen] = useState(false);
   const signedIn = status === "ready" && !!profile;
   const profileHref = profile ? `/profile/${profile.username}` : "/auth/login";
+  // Only the signed in user's own profile lights up the menu, not every profile they browse.
+  const onOwnProfile = isOwnProfilePath(pathname, profile?.username);
 
   const items = NAV.filter((n) => signedIn || n.href === "/discover");
 
@@ -56,6 +60,11 @@ export function AppShell({ children, rail, wide }: Props) {
           <img src="/logo.png" alt="Inkspire" />
         </Link>
         <span className="spacer" />
+        {signedIn && isStaff && (
+          <Link href="/admin" className="icon-btn" aria-label="Admin portal" title="Admin portal">
+            <Icon name="shield" size={22} />
+          </Link>
+        )}
         {signedIn ? (
           <button type="button" className="icon-btn" onClick={() => setNotifOpen(true)} aria-label={`Notifications${unread.count ? `, ${unread.count} unread` : ""}`}>
             <Icon name="bell" size={22} />
@@ -81,7 +90,7 @@ export function AppShell({ children, rail, wide }: Props) {
             </Link>
           ))}
           {signedIn && (
-            <Link href={profileHref} className="nav__item" aria-current={pathname.startsWith("/profile") ? "page" : undefined}>
+            <Link href={profileHref} className="nav__item" aria-current={onOwnProfile ? "page" : undefined}>
               <Icon name="user" size={22} />
               <span>Profile</span>
             </Link>
@@ -103,7 +112,10 @@ export function AppShell({ children, rail, wide }: Props) {
               <Link href={profileHref} className="sidebar__user">
                 <Avatar name={profile.displayName} seed={profile.username} src={profile.profilePhotoUrl} size={40} squircle />
                 <span style={{ minWidth: 0 }}>
-                  <div className="sidebar__user-name">{profile.displayName}</div>
+                  <div className="sidebar__user-name">
+                    <span>{profile.displayName}</span>
+                    {profile.verified && <VerifiedBadge name={profile.displayName} size={16} interactive={false} />}
+                  </div>
                   <div className="sidebar__user-sub">@{profile.username}</div>
                 </span>
               </Link>
@@ -126,7 +138,13 @@ export function AppShell({ children, rail, wide }: Props) {
       </aside>
 
       <main id="main" className="shell__main">
-        <div className={cn("shell__content", wide && "shell__content--wide")}>{children}</div>
+        <div className={cn("shell__content", wide && "shell__content--wide")}>
+          {children}
+          <footer className="site-footer">
+            <p>&copy; {new Date().getFullYear()} Inkspire. All rights reserved.</p>
+            <p>Developed by Drexx Technologies</p>
+          </footer>
+        </div>
       </main>
 
       {rail && (
@@ -162,7 +180,7 @@ export function AppShell({ children, rail, wide }: Props) {
               </span>
               <span className="tabbar__label">Settings</span>
             </Link>
-            <Link href={profileHref} className="tabbar__item" aria-current={pathname.startsWith("/profile") ? "page" : undefined}>
+            <Link href={profileHref} className="tabbar__item" aria-current={onOwnProfile ? "page" : undefined}>
               <span className="tabbar__icon">
                 <Icon name="user" size={22} />
               </span>

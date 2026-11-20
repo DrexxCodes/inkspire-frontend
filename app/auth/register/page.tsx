@@ -12,7 +12,6 @@ import { validateDisplayName, validateEmail, validatePassword, validateUsername 
 import { useDebouncedValue } from "@/hooks/useDebouncedValue";
 import { usePublicSettings } from "@/hooks/usePublicSettings";
 import { AuthFrame } from "@/components/layout/AuthFrame";
-import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
 import { Banner } from "@/components/ui/feedback";
 import { TextField } from "@/components/ui/fields";
@@ -117,13 +116,6 @@ function RegisterForm() {
           </>
         )}
         <TextField label="Display name" autoComplete="name" value={displayName} onChange={(e) => setDisplayName(e.target.value)} error={errors.displayName} maxLength={60} />
-        <div className="avatar-preview" aria-live="polite">
-          <Avatar name={displayName || username || "You"} seed={username || displayName || "inkspire"} size={64} squircle />
-          <p>
-            <strong>Your avatar</strong>
-            <span>We generate one for you from your username. You can upload your own photo later.</span>
-          </p>
-        </div>
         <TextField
           label="Username"
           autoComplete="username"

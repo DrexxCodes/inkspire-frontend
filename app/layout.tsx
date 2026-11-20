@@ -3,6 +3,7 @@ import localFont from "next/font/local";
 import type { ReactNode } from "react";
 import { AuthProvider } from "@/stores/auth-store";
 import { ToastProvider } from "@/stores/toast-store";
+import { JoinPromptProvider } from "@/stores/join-prompt-store";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
@@ -56,7 +57,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
         </a>
         <ToastProvider>
           <AuthProvider>
-            <div id="app-root">{children}</div>
+            <JoinPromptProvider>
+              <div id="app-root">{children}</div>
+            </JoinPromptProvider>
           </AuthProvider>
           <ToastViewport />
         </ToastProvider>

@@ -12,6 +12,7 @@ import { formatDateTime, humanizeAction } from "@/utils/format";
 import type { AdminUser, Permissions, Role } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
 import { Button } from "@/components/ui/Button";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { ConfirmDialog } from "@/components/ui/ConfirmDialog";
 import { ErrorState, Spinner } from "@/components/ui/feedback";
 import { SelectField, Switch } from "@/components/ui/fields";
@@ -28,7 +29,7 @@ const PERMISSION_LABELS: { key: keyof Permissions; label: string; hint: string }
   { key: "managePlatform", label: "Platform settings", hint: "Limits and feature switches" },
 ];
 
-type Pending = { kind: "disable" | "block" | "reactivate" } | null;
+type Pending = { kind: "disable" | "block" | "reactivate" | "unverify" } | null;
 
 interface Props {
   uid: string | null;
@@ -48,6 +49,8 @@ export function UserDrawer({ uid, onClose, onChanged }: Props) {
   const u = detail.data?.user;
   const actor = me && profile ? { uid: me.uid, role: profile.role as Role } : null;
   const manageable = !!u && !!actor && permissions?.manageUsers && canManageUser(actor, { id: u.id, role: u.role });
+  // Verification is a super admin power. The backend enforces it; this only decides what to show.
+  const canVerify = profile?.role === "super_admin";
   const rolesOk = !!u && !!actor && permissions?.manageRoles && canManageUser(actor, { id: u.id, role: u.role });
 
   const run = async (fn: () => Promise<{ user: AdminUser } | unknown>, ok: string) => {
@@ -75,14 +78,39 @@ export function UserDrawer({ uid, onClose, onChanged }: Props) {
           <div className="person">
             <Avatar name={u.displayName} seed={u.username} src={u.profilePhotoUrl} size={56} squircle />
             <div className="person__text">
-              <div className="person__name">{u.displayName}</div>
+              <div className="person__name name-line">
+                <span style={{ minWidth: 0, overflow: "hidden", textOverflow: "ellipsis" }}>{u.displayName}</span>
+                {u.verified && <VerifiedBadge name={u.displayName} size={18} interactive={false} />}
+              </div>
               <div className="person__sub">@{u.username} · {u.email ?? "no email"}</div>
             </div>
             <span className="chip chip--static">{u.accountStatus}</span>
           </div>
           {u.statusReason && <p className="queue-card__reason">{u.statusReason}</p>}
 
-          {!manageable && <p className="muted small">You cannot change this account. Accounts of equal or higher rank, and your own, are read only.</p>}
+          {!manageable && <p className="muted small">Status, role and permissions cannot be changed here. Accounts of equal or higher rank, and your own, are read only.</p>}
+
+          {canVerify && (
+            <section style={{ display: "grid", gap: 10 }}>
+              <h3 className="h3">Verification badge</h3>
+              <p className="muted small">
+                {u.verified
+                  ? `Verified${u.verifiedAt ? ` on ${formatDateTime(u.verifiedAt)}` : ""}. The badge shows beside their name on Discover, works and their profile.`
+                  : "Not verified. Confer the badge on creators whose work is authentic and rich."}
+              </p>
+              <div>
+                {u.verified ? (
+                  <Button size="sm" variant="secondary" disabled={busy} onClick={() => setPending({ kind: "unverify" })}>
+                    Remove badge
+                  </Button>
+                ) : (
+                  <Button size="sm" icon="check" loading={busy} onClick={() => run(() => adminService.verify(u.id), "Verification badge conferred")}>
+                    Confer badge
+                  </Button>
+                )}
+              </div>
+            </section>
+          )}
 
           {manageable && (
             <section style={{ display: "grid", gap: 10 }}>
@@ -159,6 +187,8 @@ export function UserDrawer({ uid, onClose, onChanged }: Props) {
             </section>
           )}
 
+          {detail.data?.historyAvailable === false && <p className="muted small">Moderation history could not be loaded right now. Everything else on this account is current.</p>}
+
           {detail.data && detail.data.moderationHistory.length > 0 && (
             <section style={{ display: "grid", gap: 8 }}>
               <h3 className="h3">Moderation history</h3>
@@ -175,6 +205,21 @@ export function UserDrawer({ uid, onClose, onChanged }: Props) {
         </div>
       )}
 
+      <ConfirmDialog
+        open={pending?.kind === "unverify"}
+        onClose={() => setPending(null)}
+        title="Remove the verification badge?"
+        confirmLabel="Remove badge"
+        tone="danger"
+        onConfirm={async () => {
+          const res = await adminService.unverify(u!.id);
+          onChanged(res.user);
+          toast.success("Verification badge removed");
+          detail.reload();
+        }}
+      >
+        The badge disappears from their name everywhere. You can confer it again at any time.
+      </ConfirmDialog>
       <ConfirmDialog
         open={pending?.kind === "disable"}
         onClose={() => setPending(null)}

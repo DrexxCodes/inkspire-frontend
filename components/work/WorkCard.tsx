@@ -5,6 +5,7 @@ import { formatCount, readingMinutes, timeAgo } from "@/utils/format";
 import type { WorkDto } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 
 interface Props {
   work: WorkDto;
@@ -81,9 +82,16 @@ export function WorkCard({ work, variant = "feed", showStatus, href }: Props) {
       <div className="work-card__head">
         <Avatar name={work.author.displayName} seed={work.author.username} src={work.author.profilePhotoUrl} size={44} />
         <div className="work-card__who">
-          <Link href={`/profile/${work.author.username}`} className="work-card__author work-card__author-link">
-            {work.author.displayName}
-          </Link>
+          <div className="name-line">
+            <Link href={`/profile/${work.author.username}`} className="work-card__author work-card__author-link">
+              {work.author.displayName}
+            </Link>
+            {work.author.verified && (
+              <span className="verified-layer">
+                <VerifiedBadge name={work.author.displayName} />
+              </span>
+            )}
+          </div>
           <div className="work-card__when">
             {work.publishedAt ? timeAgo(work.publishedAt) : timeAgo(work.updatedAt)} in {work.category.name}
           </div>

@@ -11,6 +11,7 @@ import { useRequireSignIn } from "@/hooks/useRequireSignIn";
 import { timeAgo } from "@/utils/format";
 import type { CommentDto } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
+import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { Button } from "@/components/ui/Button";
 import { EmptyState, ErrorState, LoadMore, Spinner } from "@/components/ui/feedback";
 import { updateById } from "@/utils/list";
@@ -116,13 +117,14 @@ function CommentItem({ workId, comment, maxLength, canModerate, onDeleted, onRep
       <div className="comment__main">
         <div className="comment__meta">
           <span className="comment__name">{removed ? "Removed" : comment.author.displayName}</span>
+          {!removed && comment.author.verified && <VerifiedBadge name={comment.author.displayName} size={16} />}
           <span className="comment__time">{timeAgo(comment.createdAt)}</span>
         </div>
         <p className={removed ? "comment__body comment__body--removed" : "comment__body"}>{removed ? "This comment was deleted." : comment.content}</p>
         {!removed && (
           <div className="comment__actions">
             {isTop && (
-              <Button variant="ghost" size="sm" onClick={() => requireSignIn() && setReplying((v) => !v)}>
+              <Button variant="ghost" size="sm" onClick={() => requireSignIn({ authorName: comment.author.displayName }) && setReplying((v) => !v)}>
                 Reply
               </Button>
             )}
@@ -177,9 +179,11 @@ interface ThreadProps {
   /** Called when the visible total changes, so the engagement bar can stay in sync. */
   onCountChange?: (delta: number) => void;
   canModerate?: boolean;
+  /** Display name of the work's author, used when a signed out visitor is asked to join. */
+  authorName?: string;
 }
 
-export function CommentThread({ workId, onCountChange, canModerate = false }: ThreadProps) {
+export function CommentThread({ workId, onCountChange, canModerate = false, authorName }: ThreadProps) {
   const settings = usePublicSettings();
   const toast = useToast();
   const { status } = useAuth();
@@ -208,7 +212,7 @@ export function CommentThread({ workId, onCountChange, canModerate = false }: Th
       {status === "ready" ? (
         <CommentForm placeholder="Add a comment" submitLabel="Post comment" maxLength={settings.maxCommentLength} onSubmit={add} />
       ) : (
-        <Button variant="secondary" onClick={() => requireSignIn()}>
+        <Button variant="secondary" onClick={() => requireSignIn({ authorName })}>
           Sign in to comment
         </Button>
       )}

@@ -8,6 +8,8 @@ export type ShareTarget = "copy_link" | "whatsapp" | "x" | "facebook" | "telegra
 export interface Page<T> {
   items: T[];
   nextCursor: string | null;
+  /** Signed out visitors only: there are more works, but they are behind signing in. */
+  gated?: boolean;
 }
 
 export interface Permissions {
@@ -25,6 +27,8 @@ export interface AuthorSummary {
   username: string;
   displayName: string;
   profilePhotoUrl: string | null;
+  /** A super admin has conferred the verification badge. */
+  verified: boolean;
 }
 
 export interface PublicProfile extends AuthorSummary {
@@ -180,6 +184,7 @@ export interface AdminUser extends PublicProfile {
   permissions: Permissions;
   permissionOverrides: Partial<Permissions>;
   statusReason: string | null;
+  verifiedAt: string | null;
 }
 
 export interface AuditRow {

@@ -70,8 +70,9 @@
     display: flex; flex-direction: column; gap: 24px;
     position: sticky; top: 20px; height: calc(100dvh - 40px);
     padding: 24px 16px; background: var(--surface); border-radius: var(--r-sheet); box-shadow: var(--shadow-1);
-    overflow-y: auto; scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+    overflow-y: auto; scrollbar-width: none;
   }
+  .shell__sidebar::-webkit-scrollbar { display: none; }
   .shell__sidebar .brand { padding: 0 8px; }
   .shell__sidebar .brand img { height: 26px; }
   .shell__main {
@@ -83,7 +84,8 @@
 .sidebar__me { margin-top: auto; display: grid; gap: 12px; }
 .sidebar__user { display: flex; align-items: center; gap: 12px; padding: 8px; border-radius: var(--r-md); min-width: 0; }
 .sidebar__user:hover { background: var(--surface-2); }
-.sidebar__user-name { font-weight: 700; line-height: 1.2; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
+.sidebar__user-name { font-weight: 700; line-height: 1.2; display: flex; align-items: center; gap: 5px; min-width: 0; }
+.sidebar__user-name > span:first-child { min-width: 0; overflow: hidden; text-overflow: ellipsis; white-space: nowrap; }
 .sidebar__user-sub { font-size: 0.8125rem; color: var(--muted); }
 
 /* Right rail: categories, authors (desktop and up) */
@@ -92,7 +94,7 @@
   .shell--rail .shell__rail {
     display: grid; gap: 28px; align-content: start;
     position: sticky; top: 20px; max-height: calc(100dvh - 40px); overflow-y: auto;
-    scrollbar-width: thin; scrollbar-color: var(--line-strong) transparent;
+    scrollbar-width: thin;
     padding: 24px; background: var(--surface); border-radius: var(--r-sheet); box-shadow: var(--shadow-1);
   }
 }
@@ -157,3 +159,7 @@
   .admin__side .nav__item { width: auto; height: 48px; padding: 0 18px; justify-content: flex-start; border-radius: var(--r-pill); }
   .admin__side .nav__label { display: inline; }
 }
+
+/* Page footer: copyright and credit */
+.site-footer { display: grid; gap: 2px; justify-items: center; text-align: center; margin-top: 48px; padding: 20px 0 4px; border-top: 1px solid var(--line); font-size: 0.8125rem; color: var(--muted); }
+.site-footer p:last-child { font-weight: 600; color: var(--ink-2); }
