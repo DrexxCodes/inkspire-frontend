@@ -1,0 +1,50 @@
+/*
+ * One overlay system, three presentations chosen in JS (lib/breakpoints.ts overlayFor):
+ *   sheet  -> slides up from the bottom (mobile)
+ *   drawer -> slides in from the right (tablet, and contextual panels on larger screens)
+ *   modal  -> centred dialog (laptop and up)
+ */
+.overlay { position: fixed; inset: 0; z-index: 100; display: grid; }
+.overlay__scrim { position: absolute; inset: 0; background: rgba(11, 21, 48, 0.45); animation: fade 0.18s ease-out; }
+@keyframes fade { from { opacity: 0; } to { opacity: 1; } }
+
+.panel {
+  position: relative; display: flex; flex-direction: column;
+  background: var(--surface); color: var(--ink);
+  box-shadow: var(--shadow-2); outline: none;
+}
+.panel__header { display: flex; align-items: center; gap: 12px; padding: 20px 24px 12px; }
+.panel__title { font-size: 1.25rem; font-weight: 700; flex: 1; min-width: 0; }
+.panel__body { padding: 8px 24px 24px; overflow-y: auto; flex: 1; overscroll-behavior: contain; }
+.panel__footer { padding: 16px 24px calc(16px + env(safe-area-inset-bottom)); border-top: 1px solid var(--line); display: flex; gap: 10px; justify-content: flex-end; flex-wrap: wrap; }
+.panel__handle { width: 44px; height: 5px; border-radius: 5px; background: var(--line-strong); margin: 10px auto 0; display: none; }
+
+.panel--sheet {
+  align-self: end; width: 100%; max-height: 92dvh;
+  border-radius: var(--r-sheet) var(--r-sheet) 0 0;
+  animation: sheet-up 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.panel--sheet .panel__handle { display: block; }
+.panel--sheet .panel__footer > * { flex: 1; }
+@keyframes sheet-up { from { transform: translateY(100%); } to { transform: none; } }
+
+.panel--drawer {
+  justify-self: end; width: min(480px, 100%); height: 100dvh;
+  border-radius: var(--r-sheet) 0 0 var(--r-sheet);
+  animation: drawer-in 0.26s cubic-bezier(0.2, 0.9, 0.3, 1);
+}
+.panel--drawer.panel--wide { width: min(720px, 100%); }
+@keyframes drawer-in { from { transform: translateX(100%); } to { transform: none; } }
+
+.panel--modal {
+  align-self: center; justify-self: center;
+  width: min(560px, calc(100% - 48px)); max-height: min(88dvh, 820px);
+  border-radius: var(--r-sheet);
+  animation: pop 0.2s ease-out;
+}
+.panel--modal.panel--wide { width: min(980px, calc(100% - 48px)); }
+@keyframes pop { from { transform: scale(0.97); opacity: 0; } to { transform: none; opacity: 1; } }
+
+@media (prefers-reduced-motion: reduce) {
+  .panel--sheet, .panel--drawer, .panel--modal, .overlay__scrim { animation: none; }
+}

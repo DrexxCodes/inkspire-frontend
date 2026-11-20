@@ -1,0 +1,35 @@
+{
+  "name": "inkspire-frontend",
+  "version": "0.1.0",
+  "private": true,
+  "description": "Inkspire web app (Next.js, presentation only). Every operation goes through the Fastify backend.",
+  "engines": {
+    "node": ">=22"
+  },
+  "scripts": {
+    "dev": "next dev -p 7000",
+    "prebuild": "node scripts/check-no-api-routes.mjs",
+    "build": "next build",
+    "start": "next start -p 7000",
+    "typecheck": "tsc --noEmit",
+    "check:no-api": "node scripts/check-no-api-routes.mjs",
+    "test": "tsx --test test/*.test.ts"
+  },
+  "dependencies": {
+    "@dicebear/core": "^9.4.3",
+    "@dicebear/lorelei": "^9.4.2",
+    "clsx": "^2.1.1",
+    "firebase": "^12.0.0",
+    "next": "^16.4.5",
+    "react": "^19.2.0",
+    "react-dom": "^19.2.0",
+    "recharts": "^3.0.0"
+  },
+  "devDependencies": {
+    "@types/node": "^22.0.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "tsx": "^4.19.0",
+    "typescript": "^5.6.0"
+  }
+}

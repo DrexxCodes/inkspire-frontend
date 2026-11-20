@@ -1,0 +1,66 @@
+/*
+ * Design tokens. Breakpoints used in media queries (keep in sync with lib/breakpoints.ts):
+ *   tablet 640px, laptop 1024px, desktop 1280px, wide 1600px
+ */
+:root {
+  /* Ink and surface */
+  --ink: #0b1530;
+  --ink-2: #2b3555;
+  --muted: #5d6781;
+  --faint: #8a93aa;
+  --line: #e4e8f3;
+  --line-strong: #cfd5e6;
+  --surface: #ffffff;
+  --surface-2: #f6f7fc;
+  --page: #eef0f9;
+
+  /* Brand */
+  --blue: #1f5fe0;
+  --blue-ink: #1748b0;
+  --focus: #1f5fe0;
+
+  /* Soft tints (card surfaces) */
+  --tint-blue: #dbe7ff;
+  --tint-cream: #fff1cf;
+  --tint-rose: #ffe1e7;
+  --tint-mint: #d6f3e3;
+  --tint-lilac: #e7ddfa;
+
+  /* Status */
+  --danger: #c4283c;
+  --danger-soft: #fde8eb;
+  --warn: #8a5a00;
+  --warn-soft: #fff1cf;
+  --ok: #0f7a55;
+  --ok-soft: #d6f3e3;
+
+  /* Shape */
+  --r-sheet: 28px;
+  --r-card: 24px;
+  --r-md: 16px;
+  --r-sm: 12px;
+  --r-pill: 999px;
+
+  /* Elevation */
+  --shadow-1: 0 1px 2px rgba(11, 21, 48, 0.05), 0 4px 14px rgba(11, 21, 48, 0.05);
+  --shadow-2: 0 10px 40px rgba(11, 21, 48, 0.14);
+
+  /* Type */
+  --font-ui: var(--font-figtree), "Figtree", system-ui, -apple-system, "Segoe UI", sans-serif;
+  --font-read: var(--font-newsreader), "Newsreader", Georgia, "Times New Roman", serif;
+
+  /* Layout */
+  --gutter: 16px;
+  --sidebar-w: 248px;
+  --rail-w: 320px;
+  --reading-w: 40rem;
+  --tabbar-h: 68px;
+  --topbar-h: 60px;
+}
+
+@media (min-width: 640px) {
+  :root { --gutter: 24px; }
+}
+@media (min-width: 1024px) {
+  :root { --gutter: 32px; }
+}
