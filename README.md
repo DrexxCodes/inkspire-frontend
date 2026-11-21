@@ -49,6 +49,16 @@ test/         unit tests for pure logic
 - **Admin.** Menu items are hidden when the role lacks the permission. This is only convenience, the backend enforces every call.
 - **Charts.** Four series colors in a fixed order (validated for color blindness), one axis, a legend whenever there are two or more series, hover tooltip, and a table view.
 
+## Installable app (PWA)
+
+Inkspire can be installed to the home screen or desktop and opens in its own window.
+
+- **Manifest**: `app/manifest.ts` (served at `/manifest.webmanifest`). Starts at `/discover`, `display: standalone`, with shortcuts for Discover and Write.
+- **Icons**: `public/icons/` (192, 512, and a 512 maskable with the mark inside the safe zone) and `app/apple-icon.png` (180, used by iOS). Replace these when the brand mark changes.
+- **Service worker**: `public/sw.js` caches nothing and never answers a request. It only exists so Chromium keeps offering its install prompt, so it cannot serve stale pages. It is registered in production builds only (`stores/install-store.tsx`).
+- **Install guide**: `components/layout/InstallGuide.tsx`, shown collapsed on Discover. It opens on the steps for the reader's device and browser (iPhone and iPad, Android, computer), with a switcher for the others, and an **Install app** button when the browser offers a one tap prompt. It disappears once the app is installed. Detection and wording live in `lib/install.ts`.
+- **Trying it**: install needs HTTPS or `localhost`, and the service worker needs a production build (`pnpm build && pnpm start`). In Chrome open DevTools, Application, Manifest to see installability. iOS has no install prompt, only Share, Add to Home Screen.
+
 ## Tests
 
-`npm test` covers the API client (envelope, errors, token refresh), the no-API-routes guard, breakpoint and overlay mapping, list, format, diff and content utilities, route gating, redirect safety, validation, editor rules, admin rank rules, settings rules and chart helpers.
+`npm test` covers the API client (envelope, errors, token refresh), the no-API-routes guard, install device detection and steps, breakpoint and overlay mapping, list, format, diff and content utilities, route gating, redirect safety, validation, editor rules, admin rank rules, settings rules and chart helpers.

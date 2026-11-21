@@ -14,6 +14,7 @@ import { useAuth } from "@/stores/auth-store";
 import { ButtonLink } from "@/components/ui/Button";
 import { Icon } from "@/components/ui/Icon";
 import { Tabs, SegmentedControl } from "@/components/ui/Tabs";
+import { InstallGuide } from "@/components/layout/InstallGuide";
 import { EmptyState, ErrorState, Spinner, WorkCardSkeleton } from "@/components/ui/feedback";
 
 const SORTS: { id: WorkSort; label: string }[] = [
@@ -70,6 +71,8 @@ export function DiscoverFeed() {
           <p>Stories, poems and essays from the community.</p>
         </div>
       </div>
+
+      <InstallGuide />
 
       <div className="search">
         <Icon name="search" size={20} />
