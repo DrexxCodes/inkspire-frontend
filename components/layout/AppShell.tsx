@@ -140,10 +140,6 @@ export function AppShell({ children, rail, wide }: Props) {
       <main id="main" className="shell__main">
         <div className={cn("shell__content", wide && "shell__content--wide")}>
           {children}
-          <footer className="site-footer">
-            <p>&copy; {new Date().getFullYear()} Inkspire. All rights reserved.</p>
-            <p>Developed by Drexx Technologies</p>
-          </footer>
         </div>
       </main>
 

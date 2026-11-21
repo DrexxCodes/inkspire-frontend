@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no">
+  <meta name="theme-color" content="#0b1530">
+  <title>Offline | Inkspire</title>
+  <!--
+    Shown by the service worker (public/sw.js) when the app is opened or refreshed with no internet.
+    Everything is inline on purpose: this page has to work with no network at all, so it cannot depend on the
+    app's CSS, fonts or scripts. If you edit this file, bump CACHE in public/sw.js so phones pick up the new copy.
+  -->
+  <style>
+    *, *::before, *::after { box-sizing: border-box; }
+    html, body { height: 100%; margin: 0; }
+    body {
+      display: grid; place-items: center; padding: max(24px, env(safe-area-inset-top)) 24px max(24px, env(safe-area-inset-bottom));
+      color: #fff; text-align: center; overflow: hidden; touch-action: manipulation;
+      font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", system-ui, sans-serif;
+      background:
+        radial-gradient(520px 360px at 15% 0%, rgba(31, 95, 224, 0.35), transparent 70%),
+        radial-gradient(480px 360px at 100% 100%, rgba(150, 90, 220, 0.28), transparent 70%),
+        #0b1530;
+    }
+    main { width: min(100%, 380px); display: grid; justify-items: center; gap: 14px; }
+    .logo {
+      width: 84px; height: 84px; border-radius: 26px; display: grid; place-items: center; background: #fff;
+      box-shadow: 0 14px 40px rgba(0, 0, 0, 0.4); animation: float 3.2s ease-in-out infinite;
+    }
+    .logo img { height: 50px; width: auto; display: block; }
+    h1 { margin: 10px 0 0; font-family: Georgia, "Times New Roman", serif; font-size: 2rem; line-height: 1.15; font-weight: 600; letter-spacing: -0.01em; }
+    p { margin: 0; line-height: 1.5; color: rgba(255, 255, 255, 0.8); }
+    .joke { font-family: Georgia, "Times New Roman", serif; font-style: italic; font-size: 1.0625rem; min-height: 3.2em; }
+    button {
+      margin-top: 10px; min-height: 52px; padding: 0 30px; border: 0; border-radius: 999px; cursor: pointer;
+      background: #fff; color: #0b1530; font: inherit; font-weight: 700; font-size: 1rem; -webkit-tap-highlight-color: transparent;
+      transition: transform 0.12s, opacity 0.2s;
+    }
+    button:active { transform: scale(0.96); }
+    button[disabled] { opacity: 0.7; }
+    .shake { animation: shake 0.4s; }
+    .small { font-size: 0.8125rem; color: rgba(255, 255, 255, 0.55); }
+    @keyframes float { 50% { transform: translateY(-6px) rotate(-3deg); } }
+    @keyframes shake { 20%, 60% { transform: translateX(-6px); } 40%, 80% { transform: translateX(6px); } }
+    @media (prefers-reduced-motion: reduce) { * { animation: none !important; transition: none !important; } }
+  </style>
+</head>
+<body>
+  <main>
+    <div class="logo"><img src="/mark.png" alt="" onerror="this.style.display='none'"></div>
+    <h1>You're offline. The plot thickens.</h1>
+    <p>Your connection has gone off to write its memoir. No signal, no sequel, and not a single semicolon until it's back.</p>
+    <p class="joke" id="joke" aria-live="polite">Even Shakespeare needed a candle and a quill. You just need Wi-Fi.</p>
+    <button type="button" id="retry">Get back in</button>
+    <p class="small">Inkspire will be right here when the bars return.</p>
+  </main>
+  <script>
+    (function () {
+      var lines = [
+        "Still nothing. Even Hemingway would call this too minimalist.",
+        "No bars. Just one very long, very dramatic pause.",
+        "The Wi-Fi has writer's block. Please be gentle with it.",
+        "Plot twist: the internet left mid-sentence and forgot the full stop.",
+        "Shakespeare wrote Hamlet without Wi-Fi. He also had a lot of free time.",
+        "Your connection is stuck on chapter one. The sequel is delayed.",
+        "Somewhere, an oxford comma is weeping. Try again in a moment."
+      ];
+      var i = -1;
+      var btn = document.getElementById("retry");
+      var joke = document.getElementById("joke");
+      var home = "/discover";
+
+      function goBack() { location.replace(home); }
+
+      // Back online on its own (for example the signal returns while this page is open).
+      window.addEventListener("online", goBack);
+
+      btn.addEventListener("click", function () {
+        btn.disabled = true;
+        btn.textContent = "Checking the signal…";
+        // A small static file that is never answered by the service worker, so this really asks the network.
+        fetch("/icons/icon-192.png?t=" + Date.now(), { cache: "no-store" })
+          .then(function (r) { if (!r.ok) throw new Error("down"); goBack(); })
+          .catch(function () {
+            i = (i + 1 + Math.floor(Math.random() * (lines.length - 1))) % lines.length;
+            joke.textContent = lines[i];
+            btn.disabled = false;
+            btn.textContent = "Get back in";
+            btn.classList.remove("shake");
+            void btn.offsetWidth;
+            btn.classList.add("shake");
+          });
+      });
+    })();
+  </script>
+</body>
+</html>

@@ -50,13 +50,16 @@ test/         unit tests for pure logic
 - **Charts.** Four series colors in a fixed order (validated for color blindness), one axis, a legend whenever there are two or more series, hover tooltip, and a table view.
 - **Pull to refresh.** On touch screens, dragging down from the very top of a page shows the Inkspire mark in a circle that turns as you pull. Letting go past the trigger remounts the page content so every screen loads its data again. It only starts when the page is at the top and the first movement is a clear downward drag, and nothing shows until a short dead zone has passed, so normal scrolling never triggers it. It is off in dialogs, on text fields, on the editor and on sign in / register (`canPullOn`). Rules in `lib/pull-to-refresh.ts`, behavior in `components/layout/PullToRefresh.tsx`, look in `styles/pull.css`.
 
+- **App feel on touch screens.** Pinch and double tap zoom are off, and the page no longer rubber bands at the top or bottom (`components/layout/OverscrollLock.tsx`): a drag is only cancelled when nothing under the finger can scroll any further, so lists and dialogs still scroll. The top bar is fixed to the screen.
+- **Launch splash (installed app only).** `components/layout/Splash.tsx` covers the app with a reading photo under a dark overlay, the logo, a welcome, a progress bar and "Powered by Drexx Technologies" while the sign in state is checked, so the signed out screen never flashes. CSS shows it before any script runs (`styles/splash.css`, plus a tiny script in `app/layout.tsx` for iPhone); it is never shown in a normal browser tab and leaves after 8 seconds at most. The photo is one URL in `splash.css`.
+
 ## Installable app (PWA)
 
 Inkspire can be installed to the home screen or desktop and opens in its own window.
 
 - **Manifest**: `app/manifest.ts` (served at `/manifest.webmanifest`). Starts at `/discover`, `display: standalone`, with shortcuts for Discover and Write.
 - **Icons**: `public/icons/` (192, 512, and a 512 maskable with the mark inside the safe zone) and `app/apple-icon.png` (180, used by iOS). Replace these when the brand mark changes.
-- **Service worker**: `public/sw.js` caches nothing and never answers a request. It only exists so Chromium keeps offering its install prompt, so it cannot serve stale pages. It is registered in production builds only (`stores/install-store.tsx`).
+- **Service worker**: `public/sw.js` keeps a fetch handler so Chromium keeps offering its install prompt, and when a page load fails for lack of internet it answers with `public/offline.html` (a self contained page with a cheeky literary joke and a "Get back in" button). Everything else goes straight to the network, so it cannot serve stale pages or API responses. If you edit `offline.html`, bump `CACHE` in `sw.js`. It is registered in production builds only
 - **Install guide**: `components/layout/InstallGuide.tsx`, shown collapsed on Discover. It opens on the steps for the reader's device and browser (iPhone and iPad, Android, computer), with a switcher for the others, and an **Install app** button when the browser offers a one tap prompt. It disappears once the app is installed. Detection and wording live in `lib/install.ts`.
 - **Trying it**: install needs HTTPS or `localhost`, and the service worker needs a production build (`pnpm build && pnpm start`). In Chrome open DevTools, Application, Manifest to see installability. iOS has no install prompt, only Share, Add to Home Screen.
 

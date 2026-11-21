@@ -37,7 +37,7 @@ export function AdminShell({ title, children, actions }: { title: string; childr
           <span className="nav__label">Back to app</span>
         </Link>
       </aside>
-      <div>
+      <div className="admin__body">
         <header className="admin__top">
           <Link href="/discover" className="admin__exit" aria-label="Back to Inkspire">
             <Icon name="chevronLeft" size={18} />

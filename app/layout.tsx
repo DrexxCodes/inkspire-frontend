@@ -8,6 +8,8 @@ import { InstallProvider } from "@/stores/install-store";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import { ZoomLock } from "@/components/layout/ZoomLock";
 import { PullToRefresh } from "@/components/layout/PullToRefresh";
+import { OverscrollLock } from "@/components/layout/OverscrollLock";
+import { Splash } from "@/components/layout/Splash";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
 import "@/styles/ui.css";
@@ -19,6 +21,7 @@ import "@/styles/admin.css";
 import "@/styles/auth.css";
 import "@/styles/install.css";
 import "@/styles/pull.css";
+import "@/styles/splash.css";
 
 const figtree = localFont({
   src: "./fonts/Figtree-VariableFont_wght.ttf",
@@ -60,17 +63,25 @@ export const viewport: Viewport = {
   themeColor: "#ffffff",
 };
 
+const STANDALONE_SCRIPT = `try{if(navigator.standalone||matchMedia("(display-mode: standalone)").matches)document.documentElement.setAttribute("data-standalone","true")}catch(e){}`;
+
 export default function RootLayout({ children }: { children: ReactNode }) {
   return (
-    <html lang="en" className={`${figtree.variable} ${newsreader.variable}`}>
+    <html lang="en" className={`${figtree.variable} ${newsreader.variable}`} suppressHydrationWarning>
+      <head>
+        {/* Marks an installed app before anything paints, so the launch splash (styles/splash.css) is there from the first frame. */}
+        <script dangerouslySetInnerHTML={{ __html: STANDALONE_SCRIPT }} />
+      </head>
       <body>
         <ZoomLock />
+        <OverscrollLock />
         <a href="#main" className="skip-link">
           Skip to content
         </a>
         <ToastProvider>
           <InstallProvider>
             <AuthProvider>
+              <Splash />
               <JoinPromptProvider>
                 <div id="app-root">
                   <PullToRefresh>{children}</PullToRefresh>
