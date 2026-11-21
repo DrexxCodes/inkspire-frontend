@@ -18,7 +18,7 @@ import { Banner, ErrorState, Spinner } from "@/components/ui/feedback";
 import { SelectField, TextField } from "@/components/ui/fields";
 import { ResponsiveSheet } from "@/components/ui/Overlay";
 import { ModerationBanner } from "@/components/work/ModerationBanner";
-import { EMPTY_FIELDS, canRequestReview, fieldsEqual, hasProblems, planSave, statusLabel, validateFields, type EditorFields, type FieldProblems } from "./editor.logic";
+import { EMPTY_FIELDS, canRequestReview, categoryNotice, categoryOptionLabel, fieldsEqual, hasProblems, planSave, statusLabel, validateFields, type EditorFields, type FieldProblems } from "./editor.logic";
 import { useAutosave } from "./useAutosave";
 import { useEditorLoad } from "./useEditorLoad";
 import { usePublicSettings } from "@/hooks/usePublicSettings";
@@ -51,7 +51,7 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
   const router = useRouter();
   const toast = useToast();
   const settings = usePublicSettings();
-  const cats = useApi((s) => categoriesService.postable(s), []);
+  const cats = useApi((s) => categoriesService.forEditor(s), []);
 
   const [work, setWork] = useState<WorkDto | undefined>(initialWork);
   const [fields, setFields] = useState<EditorFields>(initial);
@@ -81,8 +81,9 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
     return () => window.removeEventListener("beforeunload", warn);
   }, [unsavedRevision]);
 
+  // Every active category is listed. The ones the writer cannot post in are shown but cannot be picked.
   const categories = cats.data?.items ?? [];
-  const postable = categories.filter((c) => c.canPost || c.id === fields.categoryId);
+  const categoryHint = categoryNotice({ loading: cats.loading, error: cats.error != null, items: categories });
   const bytes = useMemo(() => utf8Length(fields.content), [fields.content]);
   const checkpoint = planSave(editingRevisionId ?? null, work?.currentRevisionId) === "ask-checkpoint";
   const reviewable = !!work && canRequestReview(work, unsavedRevision);
@@ -242,14 +243,21 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
       <textarea id="ed-desc" className="editor__desc" placeholder="A line to introduce it (optional)" rows={2} value={fields.description} onChange={(e) => set("description", e.target.value)} maxLength={300} />
 
       <div className="editor__options">
-        <SelectField label="Category" value={fields.categoryId} onChange={(e) => set("categoryId", e.target.value)} error={problems.categoryId} hint={cats.error ? "Could not load categories." : undefined}>
-          <option value="">Choose a category</option>
-          {postable.map((c) => (
-            <option key={c.id} value={c.id} disabled={!c.canPost}>
-              {c.name}
-            </option>
-          ))}
-        </SelectField>
+        <div style={{ display: "grid", gap: 8, alignContent: "start" }}>
+          <SelectField label="Category" value={fields.categoryId} onChange={(e) => set("categoryId", e.target.value)} error={problems.categoryId} hint={categoryHint}>
+            <option value="">{cats.loading ? "Loading categories…" : "Choose a category"}</option>
+            {categories.map((c) => (
+              <option key={c.id} value={c.id} disabled={!c.canPost && c.id !== fields.categoryId}>
+                {categoryOptionLabel(c)}
+              </option>
+            ))}
+          </SelectField>
+          {cats.error != null && (
+            <Button size="sm" variant="secondary" icon="refresh" onClick={cats.reload}>
+              Try again
+            </Button>
+          )}
+        </div>
         <div className="field">
           <span className="field__label">Cover image</span>
           {work ? (

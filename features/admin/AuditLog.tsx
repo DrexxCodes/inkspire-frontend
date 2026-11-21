@@ -24,12 +24,12 @@ export function AuditLog() {
       {list.error != null && <ErrorState error={list.error} onRetry={list.reload} />}
       {!list.loading && !list.error && list.items.length === 0 && <EmptyState icon="history" title="No entries">Admin actions will be recorded here.</EmptyState>}
       {list.items.length > 0 && (
-        <div className="table-wrap">
+        <div className="table-wrap table-wrap--stack">
           <table className="table table--stack">
             <thead>
               <tr>
-                <th>When</th>
                 <th>Action</th>
+                <th>When</th>
                 <th>Target</th>
                 <th>By</th>
                 <th>Details</th>
@@ -38,13 +38,15 @@ export function AuditLog() {
             <tbody>
               {list.items.map((r) => (
                 <tr key={r.id}>
-                  <td>{formatDateTime(r.created_at)}</td>
-                  <td>{humanizeAction(r.action)}</td>
-                  <td>
+                  <td data-label="" style={{ fontWeight: 700 }}>
+                    {humanizeAction(r.action)}
+                  </td>
+                  <td data-label="When">{formatDateTime(r.created_at)}</td>
+                  <td data-label="Target">
                     {r.target_type} <span className="small muted">{r.target_id}</span>
                   </td>
-                  <td className="small">{r.admin_id}</td>
-                  <td className="small" style={{ maxWidth: 280, overflowWrap: "anywhere" }}>
+                  <td data-label="By" className="small" style={{ overflowWrap: "anywhere" }}>{r.admin_id}</td>
+                  <td data-label="Details" className="small cell--details" style={{ overflowWrap: "anywhere" }}>
                     {Object.keys(r.metadata ?? {}).length ? JSON.stringify(r.metadata) : ""}
                   </td>
                 </tr>

@@ -69,7 +69,7 @@ export function AdminCategories() {
         </Button>
       </div>
       {items.length === 0 && <EmptyState icon="tag" title="No categories yet">Writers need at least one category to publish.</EmptyState>}
-      <div className="table-wrap">
+      <div className="table-wrap table-wrap--stack">
         <table className="table table--stack">
           <thead>
             <tr>
@@ -82,15 +82,15 @@ export function AdminCategories() {
           <tbody>
             {items.map((c) => (
               <tr key={c.id}>
-                <td>
+                <td data-label="">
                   <div style={{ fontWeight: 700 }}>{c.name}</div>
                   <div className="small muted">{c.description}</div>
                 </td>
-                <td>{c.publishedCount ?? 0}</td>
-                <td>
-                  <Switch label={`${c.name} visible`} checked={c.isActive !== false} onChange={(v) => toggle(c, v)} />
+                <td data-label="Published">{c.publishedCount ?? 0}</td>
+                <td data-label="Visible">
+                  <Switch hideLabel label={`${c.name} visible`} checked={c.isActive !== false} onChange={(v) => toggle(c, v)} />
                 </td>
-                <td>
+                <td data-label="" className="cell--actions">
                   <div style={{ display: "flex", gap: 6 }}>
                     <Button size="sm" variant="secondary" onClick={() => { setError(null); setDraft({ id: c.id, name: c.name, description: c.description, isActive: c.isActive !== false }); }}>
                       Edit

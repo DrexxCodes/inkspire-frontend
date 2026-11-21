@@ -7,6 +7,7 @@ import { JoinPromptProvider } from "@/stores/join-prompt-store";
 import { InstallProvider } from "@/stores/install-store";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import { ZoomLock } from "@/components/layout/ZoomLock";
+import { PullToRefresh } from "@/components/layout/PullToRefresh";
 import "@/styles/tokens.css";
 import "@/styles/base.css";
 import "@/styles/ui.css";
@@ -17,6 +18,7 @@ import "@/styles/profile.css";
 import "@/styles/admin.css";
 import "@/styles/auth.css";
 import "@/styles/install.css";
+import "@/styles/pull.css";
 
 const figtree = localFont({
   src: "./fonts/Figtree-VariableFont_wght.ttf",
@@ -70,7 +72,9 @@ export default function RootLayout({ children }: { children: ReactNode }) {
           <InstallProvider>
             <AuthProvider>
               <JoinPromptProvider>
-                <div id="app-root">{children}</div>
+                <div id="app-root">
+                  <PullToRefresh>{children}</PullToRefresh>
+                </div>
               </JoinPromptProvider>
             </AuthProvider>
           </InstallProvider>

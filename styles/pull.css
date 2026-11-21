@@ -1,0 +1,31 @@
+/*
+ * Pull to refresh (components/layout/PullToRefresh.tsx).
+ * The circle waits tucked under the top bar and slides out from beneath it as the page is pulled.
+ * Its position, size and opacity are set from script while the finger moves, so nothing here depends on the pull distance.
+ */
+.ptr {
+  position: fixed; z-index: 35;
+  left: 50%; top: calc(env(safe-area-inset-top, 0px) + var(--topbar-h));
+  width: 44px; height: 44px; margin-left: -22px;
+  display: grid; place-items: center;
+  border-radius: 50%; background: var(--surface);
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-2);
+  pointer-events: none;
+  opacity: 0; transform: translateY(-56px) scale(0.6);
+  will-change: transform, opacity;
+  --ptr-rot: 0deg;
+}
+/* Only used when letting go (springing back or settling), never while the finger is moving. */
+.ptr--animating { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease; }
+
+.ptr img {
+  height: 24px; width: auto;
+  transform: rotate(var(--ptr-rot));
+  user-select: none; -webkit-user-drag: none;
+}
+/* Carries on from the angle the pull reached, so there is no jump when the spin starts. */
+.ptr--spin img { animation: ptr-spin 0.9s linear infinite; }
+@keyframes ptr-spin {
+  from { transform: rotate(var(--ptr-rot)); }
+  to { transform: rotate(calc(var(--ptr-rot) + 360deg)); }
+}

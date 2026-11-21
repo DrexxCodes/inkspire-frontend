@@ -1,4 +1,4 @@
-import type { WorkDto } from "@/types/api";
+import type { PostableCategory, WorkDto } from "@/types/api";
 
 export interface EditorFields {
   title: string;
@@ -66,4 +66,19 @@ export function statusLabel(state: SaveState, savedAt: Date | null): string {
     default:
       return "";
   }
+}
+
+/** The label of one option in the category dropdown. Categories the writer cannot post in stay visible but say so. */
+export const categoryOptionLabel = (c: PostableCategory): string => (c.canPost ? c.name : `${c.name} (no access)`);
+
+/**
+ * The line under the category dropdown when something stops the writer from choosing. `undefined` means all is well.
+ * `loading` and `error` describe the request for the list.
+ */
+export function categoryNotice(state: { loading: boolean; error: boolean; items: PostableCategory[] }): string | undefined {
+  if (state.loading) return undefined;
+  if (state.error) return "Could not load categories.";
+  if (state.items.length === 0) return "No categories are available yet. An admin needs to add one.";
+  if (!state.items.some((c) => c.canPost)) return "You cannot post in any category yet. Ask an admin to give you access.";
+  return undefined;
 }

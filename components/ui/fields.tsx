@@ -66,12 +66,12 @@ export function SelectField({ label, hideLabel, hint, error, children, ...rest }
   );
 }
 
-export function Switch({ checked, onChange, label, disabled }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; disabled?: boolean }) {
+export function Switch({ checked, onChange, label, disabled, hideLabel }: { checked: boolean; onChange: (v: boolean) => void; label: ReactNode; disabled?: boolean; hideLabel?: boolean }) {
   return (
     <label className="switch">
       <input type="checkbox" role="switch" checked={checked} disabled={disabled} onChange={(e) => onChange(e.target.checked)} />
       <span className="switch__track" aria-hidden="true" />
-      <span>{label}</span>
+      <span className={hideLabel ? "visually-hidden" : undefined}>{label}</span>
     </label>
   );
 }

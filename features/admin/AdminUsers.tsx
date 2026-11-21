@@ -26,7 +26,7 @@ export function AdminUsers() {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))", alignItems: "end" }}>
+      <div className="filters">
         <div className="search">
           <Icon name="search" size={20} />
           <input className="input" type="search" placeholder="Search name, username or email" aria-label="Search users" value={q} onChange={(e) => setQ(e.target.value)} />
@@ -52,7 +52,7 @@ export function AdminUsers() {
       {!list.loading && !list.error && list.items.length === 0 && <EmptyState icon="users" title="No users match these filters" />}
 
       {list.items.length > 0 && (
-        <div className="table-wrap">
+        <div className="table-wrap table-wrap--stack">
           <table className="table table--stack">
             <thead>
               <tr>
@@ -65,7 +65,7 @@ export function AdminUsers() {
             <tbody>
               {list.items.map((u) => (
                 <tr key={u.id} data-clickable="true" tabIndex={0} onClick={() => setSelected(u.id)} onKeyDown={(e) => (e.key === "Enter" || e.key === " ") && setSelected(u.id)}>
-                  <td>
+                  <td data-label="">
                     <div className="person">
                       <Avatar name={u.displayName} seed={u.username} src={u.profilePhotoUrl} size={36} squircle />
                       <div className="person__text">
@@ -77,11 +77,11 @@ export function AdminUsers() {
                       </div>
                     </div>
                   </td>
-                  <td>{ROLE_LABEL[u.role]}</td>
-                  <td>
+                  <td data-label="Role">{ROLE_LABEL[u.role]}</td>
+                  <td data-label="Status">
                     <span className={u.accountStatus === "active" ? "chip chip--static" : "chip chip--warn chip--static"}>{u.accountStatus}</span>
                   </td>
-                  <td>{formatDate(u.createdAt)}</td>
+                  <td data-label="Joined">{formatDate(u.createdAt)}</td>
                 </tr>
               ))}
             </tbody>

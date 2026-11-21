@@ -48,6 +48,7 @@ test/         unit tests for pure logic
 - **Editor.** Autosave writes to the draft state (no revision). "Save version" creates a revision. Editing an older version shows a notice and asks whether the new version should become current. Flagged works show the moderator's reason and offer "Request review" after a new version is saved.
 - **Admin.** Menu items are hidden when the role lacks the permission. This is only convenience, the backend enforces every call.
 - **Charts.** Four series colors in a fixed order (validated for color blindness), one axis, a legend whenever there are two or more series, hover tooltip, and a table view.
+- **Pull to refresh.** On touch screens, dragging down from the very top of a page shows the Inkspire mark in a circle that turns as you pull. Letting go past the trigger remounts the page content so every screen loads its data again. It only starts when the page is at the top and the first movement is a clear downward drag, and nothing shows until a short dead zone has passed, so normal scrolling never triggers it. It is off in dialogs, on text fields, on the editor and on sign in / register (`canPullOn`). Rules in `lib/pull-to-refresh.ts`, behavior in `components/layout/PullToRefresh.tsx`, look in `styles/pull.css`.
 
 ## Installable app (PWA)
 

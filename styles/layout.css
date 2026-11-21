@@ -141,6 +141,13 @@
   position: sticky; top: 0; z-index: 40; display: flex; align-items: center; gap: 12px;
   height: var(--topbar-h); padding: 0 var(--gutter); background: rgba(255,255,255,0.9); backdrop-filter: blur(14px); border-bottom: 1px solid var(--line);
 }
+.admin__exit {
+  flex: none; display: inline-flex; align-items: center; gap: 2px; height: 40px; padding: 0 16px 0 10px;
+  border-radius: var(--r-pill); background: var(--ink); color: #fff; font-weight: 700; font-size: 0.9375rem;
+  -webkit-tap-highlight-color: transparent; transition: transform 0.12s;
+}
+.admin__exit:active { transform: scale(0.96); }
+.admin__side .admin__exit-link { margin-top: auto; }
 .admin__main { padding: 24px var(--gutter) 48px; min-width: 0; }
 .admin__content { max-width: 1280px; margin: 0 auto; }
 .admin__title { font-size: 1.5rem; font-weight: 800; }

@@ -32,12 +32,16 @@ export function AdminShell({ title, children, actions }: { title: string; childr
           <img src="/mark.png" alt="" />
         </Link>
         {nav}
+        <Link href="/discover" className="nav__item admin__exit-link" title="Back to Inkspire">
+          <Icon name="home" size={22} />
+          <span className="nav__label">Back to app</span>
+        </Link>
       </aside>
       <div>
         <header className="admin__top">
-          <Link href="/discover" className="brand brand--mark" aria-label="Back to Inkspire">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img src="/mark.png" alt="" />
+          <Link href="/discover" className="admin__exit" aria-label="Back to Inkspire">
+            <Icon name="chevronLeft" size={18} />
+            <span>App</span>
           </Link>
           <div className="scroll-x" style={{ display: "flex", gap: 6, overflowX: "auto" }}>
             {items.map((e) => (

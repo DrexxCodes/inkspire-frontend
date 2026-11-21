@@ -40,7 +40,7 @@ export function AdminWorks() {
 
   return (
     <div style={{ display: "grid", gap: 16 }}>
-      <div style={{ display: "grid", gap: 12, gridTemplateColumns: "repeat(auto-fit, minmax(180px, 1fr))" }}>
+      <div className="filters">
         <SelectField label="Status" value={status} onChange={(e) => setParam("status", e.target.value)}>
           <option value="">Any</option>
           <option value="published">Published</option>
@@ -63,7 +63,7 @@ export function AdminWorks() {
       {!list.loading && !list.error && list.items.length === 0 && <EmptyState icon="file" title="No works match these filters" />}
 
       {list.items.length > 0 && (
-        <div className="table-wrap">
+        <div className="table-wrap table-wrap--stack">
           <table className="table table--stack">
             <thead>
               <tr>
@@ -77,17 +77,17 @@ export function AdminWorks() {
             <tbody>
               {list.items.map((w) => (
                 <tr key={w.id}>
-                  <td>
+                  <td data-label="">
                     <Link href={`/works/${w.id}`} style={{ fontWeight: 700 }}>
                       {w.title}
                     </Link>
                   </td>
-                  <td>@{w.author.username}</td>
-                  <td>
+                  <td data-label="Author">@{w.author.username}</td>
+                  <td data-label="Status">
                     <span className="chip chip--static">{w.status}</span>
                   </td>
-                  <td>{formatDate(w.updatedAt)}</td>
-                  <td>
+                  <td data-label="Updated">{formatDate(w.updatedAt)}</td>
+                  <td data-label="" className="cell--actions">
                     <div style={{ display: "flex", gap: 6, flexWrap: "wrap" }}>
                       {permissions?.moderateWorks && w.status === "published" && (
                         <Button size="sm" variant="secondary" onClick={() => setAct({ kind: "flag", work: w })}>

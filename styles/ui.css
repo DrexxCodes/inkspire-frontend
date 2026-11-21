@@ -207,14 +207,36 @@ button.chip:hover, a.chip:hover { background: var(--surface-2); }
 .cell-user__name { font-weight: 600; }
 .cell-user__sub { color: var(--muted); font-size: 0.8125rem; }
 
-/* On small screens each table row becomes a labelled card so nothing scrolls sideways. */
+/* On small screens each table row becomes a card: the first cell is the heading, the rest are "label  value" lines. */
 @media (max-width: 639px) {
+  .table-wrap--stack { overflow: visible; border: 0; border-radius: 0; background: transparent; }
+  .table--stack, .table--stack tbody { display: grid; gap: 12px; width: 100%; }
   .table--stack thead { display: none; }
-  .table--stack, .table--stack tbody, .table--stack tr, .table--stack td { display: block; width: 100%; }
-  .table--stack tr { padding: 12px 4px; border-bottom: 1px solid var(--line); }
-  .table--stack td { border: 0; padding: 4px 12px; display: flex; justify-content: space-between; gap: 16px; }
-  .table--stack td::before { content: attr(data-label); color: var(--muted); font-size: 0.8125rem; font-weight: 600; flex: none; }
-  .table--stack td[data-label=""]::before { display: none; }
+  .table--stack tr {
+    display: grid; gap: 10px; padding: 16px;
+    background: var(--surface); border: 1px solid var(--line); border-radius: var(--r-card); box-shadow: var(--shadow-1);
+  }
+  .table--stack td {
+    display: grid; grid-template-columns: 5.5rem minmax(0, 1fr); align-items: center; gap: 12px;
+    padding: 0; border: 0; text-align: left; min-width: 0;
+  }
+  .table--stack td::before { content: attr(data-label); color: var(--muted); font-size: 0.8125rem; font-weight: 600; }
+  .table--stack td[data-label=""] { display: block; }
+  .table--stack td[data-label=""]::before { content: none; }
+  .table--stack .cell--actions { padding-top: 12px; border-top: 1px solid var(--line); }
+  .table--stack .cell--actions > div { display: flex; gap: 8px; flex-wrap: wrap; }
+  .table--stack .cell--actions .btn { flex: 1 1 0; }
+  .table--stack tbody tr[data-clickable="true"]:hover { background: var(--surface); }
+  .table--stack tbody tr[data-clickable="true"]:active { background: var(--surface-2); }
+}
+@media (min-width: 640px) { .table .cell--details { max-width: 280px; } }
+
+/* Filter bar above a list: search on its own row on phones, selects side by side. */
+.filters { display: grid; gap: 12px; grid-template-columns: repeat(2, minmax(0, 1fr)); align-items: end; }
+.filters > .search, .filters > .filters__wide { grid-column: 1 / -1; }
+@media (min-width: 640px) {
+  .filters { grid-template-columns: repeat(auto-fit, minmax(180px, 1fr)); }
+  .filters > .search, .filters > .filters__wide { grid-column: auto; }
 }
 
 .toolbar { display: flex; flex-wrap: wrap; gap: 12px; align-items: center; }
