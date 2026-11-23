@@ -61,6 +61,9 @@ export function AppShell({ children, rail, wide }: Props) {
           <img src="/logo.png" alt="Inkspire" />
         </Link>
         <span className="spacer" />
+        <Link href="/billboard" className="icon-btn" aria-label="Billboard" title="Billboard" aria-current={pathname.startsWith("/billboard") ? "page" : undefined}>
+          <Icon name="trophy" size={22} />
+        </Link>
         {signedIn && isStaff && (
           <Link href="/admin" className="icon-btn" aria-label="Admin portal" title="Admin portal">
             <Icon name="shield" size={22} />
