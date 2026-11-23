@@ -22,6 +22,7 @@ interface NavEntry {
 
 const NAV: NavEntry[] = [
   { href: "/discover", label: "Discover", icon: "compass", match: (p) => p === "/discover" || p.startsWith("/works") },
+  { href: "/billboard", label: "Billboard", icon: "trophy", match: (p) => p.startsWith("/billboard") },
   { href: "/write", label: "My works", icon: "pen", match: (p) => p.startsWith("/write") },
   { href: "/settings", label: "Settings", icon: "sliders", match: (p) => p.startsWith("/settings") },
 ];
@@ -42,7 +43,7 @@ export function AppShell({ children, rail, wide }: Props) {
   // Only the signed in user's own profile lights up the menu, not every profile they browse.
   const onOwnProfile = isOwnProfilePath(pathname, profile?.username);
 
-  const items = NAV.filter((n) => signedIn || n.href === "/discover");
+  const items = NAV.filter((n) => signedIn || n.href === "/discover" || n.href === "/billboard");
 
   const bell = signedIn && (
     <button type="button" className="nav__item" onClick={() => setNotifOpen(true)}>

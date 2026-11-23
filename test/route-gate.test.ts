@@ -4,7 +4,7 @@ import { decideGate } from "../lib/gate.ts";
 import { visibleAdminNav } from "../lib/admin-nav.ts";
 import type { Permissions } from "../types/api.ts";
 
-const none: Permissions = { manageUsers: false, manageRoles: false, manageCategories: false, moderateWorks: false, deleteWorks: false, permanentlyDeleteWorks: false, viewAnalytics: false, managePlatform: false };
+const none: Permissions = { manageUsers: false, manageRoles: false, manageCategories: false, moderateWorks: false, deleteWorks: false, permanentlyDeleteWorks: false, viewAnalytics: false, managePlatform: false, managePrompts: false };
 
 test("gate decisions by auth status", () => {
   assert.equal(decideGate("loading", null), "wait");

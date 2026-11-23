@@ -7,6 +7,8 @@ import { worksService } from "@/services/works.service";
 import { categoriesService } from "@/services/categories.service";
 import { revisionsService } from "@/services/revisions.service";
 import { moderationService } from "@/services/moderation.service";
+import { promptsService } from "@/services/prompts.service";
+import { PLACEMENT_LABEL } from "@/utils/prompt";
 import { errorMessage } from "@/lib/api/errors";
 import { useApi } from "@/hooks/useApi";
 import { useToast } from "@/stores/toast-store";
@@ -27,12 +29,14 @@ interface Props {
   workId?: string;
   /** Open an older revision for editing. */
   revisionId?: string | null;
+  /** Start a new work for this prompt. */
+  promptId?: string;
 }
 
-export function WorkEditor({ workId, revisionId = null }: Props) {
+export function WorkEditor({ workId, revisionId = null, promptId }: Props) {
   const [tick, setTick] = useState(0);
   const load = useEditorLoad(workId, revisionId, tick);
-  if (!workId) return <EditorBody key="new" />;
+  if (!workId) return <EditorBody key={`new:${promptId ?? ""}`} promptId={promptId} />;
   if (load.status === "loading") return <div style={{ display: "grid", placeItems: "center", minHeight: "40dvh" }}><Spinner label="Opening your work" /></div>;
   if (load.status === "error") return <ErrorState error={load.error} onRetry={() => setTick((t) => t + 1)} title="We could not open this work" />;
   const d = load.data;
@@ -40,6 +44,7 @@ export function WorkEditor({ workId, revisionId = null }: Props) {
 }
 
 interface BodyProps {
+  promptId?: string;
   work?: WorkDto;
   editingRevisionId?: string;
   initial?: EditorFields;
@@ -47,13 +52,17 @@ interface BodyProps {
   onReload?: () => void;
 }
 
-function EditorBody({ work: initialWork, editingRevisionId = undefined, initial = EMPTY_FIELDS, recovered = null, onReload }: BodyProps) {
+function EditorBody({ promptId: newPromptId, work: initialWork, editingRevisionId = undefined, initial = EMPTY_FIELDS, recovered = null, onReload }: BodyProps) {
   const router = useRouter();
   const toast = useToast();
   const settings = usePublicSettings();
   const cats = useApi((s) => categoriesService.forEditor(s), []);
 
   const [work, setWork] = useState<WorkDto | undefined>(initialWork);
+  // The prompt this work is written for. Its category is fixed, and only an open prompt takes new entries.
+  const promptId = work ? work.prompt?.id : newPromptId;
+  const promptQ = useApi((s) => promptsService.get(promptId!, s), [promptId], !!promptId);
+  const prompt = promptQ.data?.prompt ?? null;
   const [fields, setFields] = useState<EditorFields>(initial);
   const [stored, setStored] = useState<EditorFields>(initial);
   const [problems, setProblems] = useState<FieldProblems>({});
@@ -63,6 +72,11 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
   const [recoverOpen, setRecoverOpen] = useState(!!recovered);
   const [cover, setCover] = useState<string | null>(initialWork?.coverImageUrl ?? null);
   const idempotencyKey = useRef(typeof crypto !== "undefined" && "randomUUID" in crypto ? crypto.randomUUID() : String(Date.now()));
+
+  // A new work for a prompt starts in the prompt's category.
+  useEffect(() => {
+    if (prompt && !work) setFields((f) => (f.categoryId === prompt.category.id ? f : { ...f, categoryId: prompt.category.id }));
+  }, [prompt, work]);
 
   const set = <K extends keyof EditorFields>(k: K, v: EditorFields[K]) => {
     setFields((f) => ({ ...f, [k]: v }));
@@ -104,7 +118,7 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
   /** Creates the work on first save, otherwise writes a new revision. */
   const persist = async (opts: { makeCurrent?: boolean; publish?: boolean }) => {
     if (!work) {
-      const { work: created } = await worksService.create({ ...fields, publish: !!opts.publish, idempotencyKey: idempotencyKey.current });
+      const { work: created } = await worksService.create({ ...fields, promptId: newPromptId, publish: !!opts.publish, idempotencyKey: idempotencyKey.current });
       toast.success(opts.publish ? "Published" : "Draft saved");
       router.replace(`/write/${created.id}`);
       return;
@@ -177,11 +191,44 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
     }
   };
 
+  const onDetach = async () => {
+    if (!work) return;
+    try {
+      const res = await worksService.detachPrompt(work.id);
+      setWork(res.work);
+      toast.success("Removed from the prompt");
+    } catch (e) {
+      toast.error(errorMessage(e));
+    }
+  };
+
   const canPublish = !work || work.status === "draft";
 
   return (
     <div className="editor">
       {work && <ModerationBanner work={work} />}
+      {promptId && (
+        <Banner
+          tone={prompt && prompt.phase !== "open" ? "warn" : "info"}
+          icon="trophy"
+          title={`Writing for the prompt: ${prompt?.title ?? work?.prompt?.title ?? "…"}`}
+          actions={
+            work?.prompt && !work.prompt.placement ? (
+              <Button size="sm" variant="secondary" onClick={onDetach}>
+                Remove from prompt
+              </Button>
+            ) : undefined
+          }
+        >
+          {work?.prompt?.placement
+            ? `This work won ${PLACEMENT_LABEL[work.prompt.placement]}.`
+            : prompt && prompt.phase !== "open"
+              ? "This prompt is not open for new entries, so this work cannot be published to it."
+              : prompt
+                ? `Stay in ${prompt.category.name}. Entries must be published before the prompt closes.`
+                : "Loading the prompt."}
+        </Banner>
+      )}
       {checkpoint && (
         <Banner tone="info" icon="history" title="You are editing an older version">
           Saving creates a new version that will not become current unless you choose to make it current. Readers keep seeing the current version.
@@ -244,7 +291,7 @@ function EditorBody({ work: initialWork, editingRevisionId = undefined, initial 
 
       <div className="editor__options">
         <div style={{ display: "grid", gap: 8, alignContent: "start" }}>
-          <SelectField label="Category" value={fields.categoryId} onChange={(e) => set("categoryId", e.target.value)} error={problems.categoryId} hint={categoryHint}>
+          <SelectField label="Category" value={fields.categoryId} onChange={(e) => set("categoryId", e.target.value)} error={problems.categoryId} hint={prompt ? `Fixed by the prompt: ${prompt.category.name}` : categoryHint} disabled={!!prompt}>
             <option value="">{cats.loading ? "Loading categories…" : "Choose a category"}</option>
             {categories.map((c) => (
               <option key={c.id} value={c.id} disabled={!c.canPost && c.id !== fields.categoryId}>

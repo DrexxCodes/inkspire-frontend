@@ -17,6 +17,7 @@ import "@/styles/overlay.css";
 import "@/styles/layout.css";
 import "@/styles/work.css";
 import "@/styles/profile.css";
+import "@/styles/billboard.css";
 import "@/styles/admin.css";
 import "@/styles/auth.css";
 import "@/styles/install.css";

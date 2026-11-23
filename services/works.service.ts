@@ -9,6 +9,8 @@ export interface WorkInput {
   categoryId: string;
   content: string;
   visibility?: Visibility;
+  /** Write this work for a prompt. The work then has to stay in the prompt's category. */
+  promptId?: string;
   publish?: boolean;
   idempotencyKey?: string;
 }
@@ -30,6 +32,8 @@ export const worksService = {
   publish: (id: string) => api.post<{ work: WorkDto }>(`/works/${id}/publish`, undefined, { auth: "required" }),
   archive: (id: string) => api.post<{ work: WorkDto }>(`/works/${id}/archive`, undefined, { auth: "required" }),
   setVisibility: (id: string, visibility: Visibility) => api.patch<{ work: WorkDto }>(`/works/${id}/visibility`, { visibility }, { auth: "required" }),
+  /** Withdraw a work from its prompt. Winners cannot be withdrawn. */
+  detachPrompt: (id: string) => api.delete<{ work: WorkDto }>(`/works/${id}/prompt`, { auth: "required" }),
   remove: (id: string) => api.delete<{ deleted: true }>(`/works/${id}`, { auth: "required" }),
 
   recordView: (id: string) => api.post<{ counted: boolean }>(`/works/${id}/view`, undefined, { auth: "optional" }),

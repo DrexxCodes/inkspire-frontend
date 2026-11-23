@@ -6,6 +6,7 @@ import type { WorkDto } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
 import { Icon } from "@/components/ui/Icon";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
+import { PromptTag } from "./PromptTag";
 
 interface Props {
   work: WorkDto;
@@ -58,6 +59,12 @@ export function WorkCard({ work, variant = "feed", showStatus, href }: Props) {
     </div>
   );
 
+  const tag = work.prompt && (
+    <div style={{ justifySelf: "start", maxWidth: "100%" }}>
+      <PromptTag prompt={work.prompt} />
+    </div>
+  );
+
   if (variant === "tile") {
     return (
       <article className={cn("work-card work-card--tile", `tint-${tint}`)}>
@@ -69,6 +76,7 @@ export function WorkCard({ work, variant = "feed", showStatus, href }: Props) {
           <span className="chip chip--static" style={{ justifySelf: "start", background: "rgba(255,255,255,0.7)", borderColor: "transparent" }}>
             {work.category.name}
           </span>
+          {tag}
           {title}
           {body && <p className="work-card__excerpt">{body}</p>}
         </div>
@@ -98,6 +106,7 @@ export function WorkCard({ work, variant = "feed", showStatus, href }: Props) {
         </div>
         {statusLabel && <span className="chip chip--warn chip--static">{statusLabel}</span>}
       </div>
+      {tag}
       {title}
       {body && <p className="work-card__excerpt">{body}</p>}
       {cover}

@@ -1,5 +1,6 @@
 "use client";
 
+import { PromptTag } from "@/components/work/PromptTag";
 import Link from "next/link";
 import { useMemo, useRef, useState } from "react";
 import { worksService } from "@/services/works.service";
@@ -52,6 +53,7 @@ export function WorkReader({ workId }: { workId: string }) {
       <header className="reader__head">
         <div className="reader__crumbs">
           <span className="chip chip--static">{work.category.name}</span>
+          <PromptTag prompt={work.prompt} />
           {work.visibility === "private" && <span className="chip chip--static">Private</span>}
           {work.status === "draft" && <span className="chip chip--warn chip--static">Draft</span>}
         </div>

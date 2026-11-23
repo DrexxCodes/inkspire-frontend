@@ -21,6 +21,8 @@ export interface Permissions {
   permanentlyDeleteWorks: boolean;
   viewAnalytics: boolean;
   managePlatform: boolean;
+  /** Admins and super admins only. Create prompts and choose winners. */
+  managePrompts: boolean;
 }
 
 export interface AuthorSummary {
@@ -82,6 +84,8 @@ export interface WorkDto {
   excerpt: string;
   category: { id: string; name: string; slug: string };
   author: AuthorSummary;
+  /** Set when the work was written for a weekly prompt. `placement` is 1 to 3 for winners. */
+  prompt?: WorkPromptTag | null;
   coverImageUrl: string | null;
   status: WorkStatus;
   visibility: Visibility;
@@ -98,6 +102,50 @@ export interface WorkDto {
   updatedAt: string;
   publishedAt: string | null;
   viewer: { isAuthor: boolean; liked?: boolean };
+}
+
+export interface WorkPromptTag {
+  id: string;
+  title: string;
+  placement: number | null;
+}
+
+export type PromptPhase = "draft" | "upcoming" | "open" | "judging" | "completed";
+
+export interface PromptWinner {
+  placement: number;
+  note: string | null;
+  selectedAt: string;
+  work: WorkDto;
+  /** The winner's public profile, shown on the billboard. */
+  profile: PublicProfile | null;
+}
+
+export interface PromptDto {
+  id: string;
+  title: string;
+  description: string;
+  category: { id: string; name: string; slug: string };
+  phase: PromptPhase;
+  /** Admin responses only. */
+  status?: "draft" | "published";
+  startsAt: string;
+  endsAt: string;
+  maxEntriesPerUser: number;
+  winnersAnnouncedAt: string | null;
+  publishedAt: string | null;
+  createdAt?: string;
+  entryCount: number;
+  /** Signed in viewers only. */
+  viewer?: { entries: number; canEnter: boolean };
+  winners: PromptWinner[];
+}
+
+export interface Billboard {
+  open: PromptDto[];
+  upcoming: PromptDto[];
+  judging: PromptDto[];
+  completed: PromptDto[];
 }
 
 export interface ContentPage {
