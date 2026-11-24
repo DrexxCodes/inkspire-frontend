@@ -35,25 +35,33 @@ export function clip(text: string, max: number): string {
 export const initialsOf = (name: string) =>
   name.trim().split(/\s+/).slice(0, 2).map((w) => w[0]?.toUpperCase() ?? "").join("") || "I";
 
+/** Fetches a remote picture as a base64 data URI, but only in a format the image renderer reads (PNG, JPEG, GIF). */
+async function fetchImageDataUri(url: string, maxBytes: number): Promise<string | null> {
+  try {
+    const res = await fetch(url, { signal: AbortSignal.timeout(3000), next: { revalidate: 3600 } });
+    const type = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
+    if (res.ok && /^image\/(png|jpeg|gif)$/.test(type)) {
+      const buf = Buffer.from(await res.arrayBuffer());
+      if (buf.length <= maxBytes) return `data:${type};base64,${buf.toString("base64")}`;
+    }
+  } catch {
+    /* unreachable or unreadable: the caller falls back */
+  }
+  return null;
+}
+
 /**
  * Picture of a person for the preview image. Their uploaded photo when it can be fetched in a format the
  * image renderer understands (PNG, JPEG or GIF), otherwise the same Dicebear face they get everywhere in the app.
  */
 export async function avatarForCard(photoUrl: string | null, seed: string): Promise<string | null> {
-  if (photoUrl) {
-    try {
-      const res = await fetch(photoUrl, { signal: AbortSignal.timeout(3000), next: { revalidate: 3600 } });
-      const type = res.headers.get("content-type")?.split(";")[0]?.trim() ?? "";
-      if (res.ok && /^image\/(png|jpeg|gif)$/.test(type)) {
-        const buf = Buffer.from(await res.arrayBuffer());
-        if (buf.length <= 2_000_000) return `data:${type};base64,${buf.toString("base64")}`;
-      }
-    } catch {
-      /* fall through to Dicebear */
-    }
-  }
-  return toBase64Uri(avatarDataUri(seed));
+  const photo = photoUrl ? await fetchImageDataUri(photoUrl, 2_000_000) : null;
+  return photo ?? toBase64Uri(avatarDataUri(seed));
 }
+
+/** Cover photo for the preview image, or null when there is none or it is in a format the renderer cannot read (such as WebP). */
+export const coverForCard = async (coverUrl: string | null): Promise<string | null> =>
+  coverUrl ? fetchImageDataUri(coverUrl, 4_000_000) : null;
 
 /** The image renderer only reads base64 data URIs. Dicebear's are URL encoded, so convert them. */
 function toBase64Uri(uri: string | null): string | null {

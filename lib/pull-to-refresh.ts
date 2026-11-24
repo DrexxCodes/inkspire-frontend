@@ -13,8 +13,8 @@ export const PULL = {
   trigger: 64,
   /** The furthest the spinner can be pulled. */
   max: 96,
-  /** Where the spinner rests while refreshing. */
-  hold: 64,
+  /** Where the spinner rests while refreshing. Matches the height of the semicircle (--ptr-h in styles/pull.css), so it is fully shown. */
+  hold: 76,
   /** The spinner stays at least this long, so the turn is always seen. */
   minSpinMs: 900,
   /** Degrees the logo turns per pixel pulled. */

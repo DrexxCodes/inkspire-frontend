@@ -1,36 +1,48 @@
 /*
  * Pull to refresh (components/layout/PullToRefresh.tsx).
  * A semicircle hangs from the top bar with the logo inside. Past the trigger, "Release to" glides in from the
- * left and "refresh" from the right. Position, size and opacity are set from script while the finger moves.
+ * left and "refresh" from the right. While you pull, the page content is pushed down by the same distance
+ * (--ptr-shift), so the indicator always has clear space of its own and never lands on top of any text.
+ * Position, size and opacity are set from script while the finger moves.
  */
+:root { --ptr-h: 76px; } /* height of the semicircle; keep in step with PULL.hold in lib/pull-to-refresh.ts */
+
 .ptr {
   position: fixed; z-index: 35;
   left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + var(--topbar-h));
-  display: flex; align-items: flex-start; justify-content: center; gap: 14px;
+  height: var(--ptr-h);
+  display: flex; align-items: flex-start; justify-content: center; gap: 16px;
   pointer-events: none;
-  opacity: 0; transform: translateY(-60px) scale(0.7); transform-origin: 50% 0;
+  opacity: 0;
+  transform: translateY(min(0px, calc(var(--ptr-y, 0px) - var(--ptr-h)))) scale(var(--ptr-s, 0.7)); /* slides out, then stays attached to the bar */ transform-origin: 50% 0;
   will-change: transform, opacity;
   --ptr-rot: 0deg;
 }
 /* Only used when letting go (springing back or settling), never while the finger is moving. */
 .ptr--animating { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease; }
 
+/* The page itself slides down while the indicator is out. Only applied during a pull: a transform on the content
+   would otherwise become the anchor for every fixed element inside it. */
+.ptr-on .shell__main, .ptr-on .admin__body { transform: translateY(var(--ptr-shift, 0px)); }
+.ptr-anim .shell__main, .ptr-anim .admin__body { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1); }
+
 .ptr__dome {
-  flex: none; width: 112px; height: 56px;
-  display: grid; place-items: center; padding-bottom: 6px;
+  flex: none; width: calc(var(--ptr-h) * 2); height: var(--ptr-h);
+  display: grid; place-items: center; padding-bottom: 8px;
   background: var(--surface);
-  border-radius: 0 0 56px 56px; /* flat on top against the bar, round below */
-  box-shadow: 0 0 0 1px var(--line), var(--shadow-2);
+  border-radius: 0 0 var(--ptr-h) var(--ptr-h); /* flat on top against the bar, round below */
+  box-shadow: 0 0 0 1px var(--line);
+  filter: drop-shadow(0 6px 10px rgba(11, 21, 48, 0.12)); /* follows the curve, so no boxy shadow in the corners */
 }
 .ptr__dome img {
-  height: 24px; width: auto;
+  height: 46px; width: auto;
   transform: rotate(var(--ptr-rot));
   user-select: none; -webkit-user-drag: none;
 }
 
 .ptr__label {
-  flex: 1 1 0; min-width: 0; max-width: 130px; margin-top: 14px;
-  font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ink-2); white-space: nowrap;
+  flex: 1 1 0; min-width: 0; max-width: 130px; margin-top: 22px;
+  font-size: 0.875rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ink-2); white-space: nowrap;
   opacity: 0; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
 }
 .ptr__label--left { text-align: right; transform: translateX(-36px); }
@@ -47,4 +59,5 @@
 @media (prefers-reduced-motion: reduce) {
   .ptr__label { transition: opacity 0.2s ease; transform: none !important; }
   .ptr--spin .ptr__dome img { animation-duration: 2s; }
+  .ptr-anim .shell__main, .ptr-anim .admin__body { transition: none; }
 }

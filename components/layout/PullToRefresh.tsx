@@ -4,9 +4,6 @@ import { Fragment, useEffect, useRef, useState, type ReactNode } from "react";
 import { usePathname } from "next/navigation";
 import { PULL, canPullOn, pullDistance, pullIntent, pullProgress, pullRotation, shouldRefresh } from "@/lib/pull-to-refresh";
 
-/** Distance from the circle's resting place (tucked under the top bar) to where it sits at `d` pixels of pull. */
-const HIDDEN_OFFSET = 60; // the height of the semicircle, so it starts fully tucked under the top bar
-
 const atTop = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
 
 /**
@@ -34,7 +31,8 @@ interface Gesture {
 
 /**
  * Pull to refresh for touch screens. Drag down from the very top of a page and a semicircle with the Inkspire mark
- * slides down from the top and the mark turns as you pull. Past the trigger, "Release to" and "refresh" glide in from
+ * slides down from the top and the mark turns as you pull. The page content is pushed down by the same distance
+ * (see styles/pull.css), so the semicircle and its labels always sit in clear space and never cover any text. Past the trigger, "Release to" and "refresh" glide in from
  * either side; let go and the mark keeps turning while the page reloads its data.
  *
  * It stays out of the way of normal use: it only starts when the page is already at the top, the first movement
@@ -58,13 +56,21 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
     let gesture: Gesture | null = null;
     let refreshing = false;
     let timer: ReturnType<typeof setTimeout> | undefined;
+    let settle: ReturnType<typeof setTimeout> | undefined;
+    const root = document.documentElement;
 
     const paint = (distance: number, animate: boolean) => {
       const el = node.current;
       if (!el) return;
       const p = pullProgress(distance);
+      clearTimeout(settle);
       el.classList.toggle("ptr--animating", animate);
-      el.style.transform = `translateY(${distance - HIDDEN_OFFSET}px) scale(${0.7 + 0.3 * p})`;
+      // The semicircle slides out from under the top bar and the page content moves down by the same amount.
+      el.style.setProperty("--ptr-y", `${distance}px`);
+      el.style.setProperty("--ptr-s", String(0.7 + 0.3 * p));
+      root.style.setProperty("--ptr-shift", `${distance}px`);
+      root.classList.add("ptr-on");
+      root.classList.toggle("ptr-anim", animate);
       // "Release to refresh" glides in from both sides once letting go would refresh.
       el.classList.toggle("ptr--ready", !refreshing && shouldRefresh(distance));
       el.style.opacity = String(Math.min(1, distance / 32));
@@ -74,6 +80,8 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
     const retract = () => {
       paint(0, true);
       node.current?.classList.remove("ptr--spin", "ptr--ready");
+      // Once the page has slid back up, stop transforming it (a transform would trap fixed elements inside it).
+      settle = setTimeout(() => root.classList.remove("ptr-on", "ptr-anim"), 340);
     };
 
     const startRefresh = () => {
@@ -151,6 +159,9 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       document.removeEventListener("touchend", onEnd);
       document.removeEventListener("touchcancel", onEnd);
       clearTimeout(timer);
+      clearTimeout(settle);
+      root.classList.remove("ptr-on", "ptr-anim");
+      root.style.removeProperty("--ptr-shift");
     };
   }, []);
 

@@ -10,11 +10,12 @@ import { useInfiniteTrigger } from "@/hooks/useInfiniteTrigger";
 import { formatCount, formatDate } from "@/utils/format";
 import type { WorkDto } from "@/types/api";
 import { Avatar } from "@/components/ui/Avatar";
-import { ButtonLink } from "@/components/ui/Button";
+import { Button, ButtonLink } from "@/components/ui/Button";
 import { VerifiedBadge } from "@/components/ui/VerifiedBadge";
 import { Tabs } from "@/components/ui/Tabs";
 import { EmptyState, ErrorState, Skeleton, Spinner } from "@/components/ui/feedback";
 import { WorkCard } from "@/components/work/WorkCard";
+import { ShareSheet } from "@/components/work/ShareSheet";
 
 type Tab = "works" | "about";
 
@@ -26,6 +27,7 @@ export function ProfileView({ username }: { username: string }) {
   const signedIn = authStatus === "ready";
   const prof = useApi((s) => usersService.profile(username, s), [username]);
   const [tab, setTab] = useState<Tab>("works");
+  const [shareOpen, setShareOpen] = useState(false);
   const works = useCursorList<WorkDto>((cursor, signal) => usersService.works(username, cursor, signal), [username, signedIn], authSettled);
   const sentinel = useInfiniteTrigger(works.loadMore, works.hasMore && !works.loadingMore && !works.loading && tab === "works");
 
@@ -52,6 +54,9 @@ export function ProfileView({ username }: { username: string }) {
           {p.bio && <p className="profile__bio">{p.bio}</p>}
         </div>
         <div className="profile__actions">
+          <Button variant="secondary" icon="share" onClick={() => setShareOpen(true)}>
+            Share profile
+          </Button>
           {mine && (
             <ButtonLink href="/settings" variant="secondary" icon="pen">
               Edit profile
@@ -110,6 +115,14 @@ export function ProfileView({ username }: { username: string }) {
           <div ref={sentinel} aria-hidden="true" />
         </>
       )}
+
+      <ShareSheet
+        open={shareOpen}
+        onClose={() => setShareOpen(false)}
+        path={`/profile/${encodeURIComponent(p.username)}`}
+        title={mine ? `Check out my profile on Inkspire: ${p.displayName} (@${p.username})` : `${p.displayName} (@${p.username}) on Inkspire`}
+        heading={mine ? "Share your profile" : `Share ${p.displayName}'s profile`}
+      />
 
       {tab === "about" && (
         <div style={{ display: "grid", gap: 8 }}>
