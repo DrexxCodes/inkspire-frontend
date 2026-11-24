@@ -1,31 +1,50 @@
 /*
  * Pull to refresh (components/layout/PullToRefresh.tsx).
- * The circle waits tucked under the top bar and slides out from beneath it as the page is pulled.
- * Its position, size and opacity are set from script while the finger moves, so nothing here depends on the pull distance.
+ * A semicircle hangs from the top bar with the logo inside. Past the trigger, "Release to" glides in from the
+ * left and "refresh" from the right. Position, size and opacity are set from script while the finger moves.
  */
 .ptr {
   position: fixed; z-index: 35;
-  left: 50%; top: calc(env(safe-area-inset-top, 0px) + var(--topbar-h));
-  width: 44px; height: 44px; margin-left: -22px;
-  display: grid; place-items: center;
-  border-radius: 50%; background: var(--surface);
-  box-shadow: 0 0 0 1px var(--line), var(--shadow-2);
+  left: 0; right: 0; top: calc(env(safe-area-inset-top, 0px) + var(--topbar-h));
+  display: flex; align-items: flex-start; justify-content: center; gap: 14px;
   pointer-events: none;
-  opacity: 0; transform: translateY(-56px) scale(0.6);
+  opacity: 0; transform: translateY(-60px) scale(0.7); transform-origin: 50% 0;
   will-change: transform, opacity;
   --ptr-rot: 0deg;
 }
 /* Only used when letting go (springing back or settling), never while the finger is moving. */
 .ptr--animating { transition: transform 0.28s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.22s ease; }
 
-.ptr img {
+.ptr__dome {
+  flex: none; width: 112px; height: 56px;
+  display: grid; place-items: center; padding-bottom: 6px;
+  background: var(--surface);
+  border-radius: 0 0 56px 56px; /* flat on top against the bar, round below */
+  box-shadow: 0 0 0 1px var(--line), var(--shadow-2);
+}
+.ptr__dome img {
   height: 24px; width: auto;
   transform: rotate(var(--ptr-rot));
   user-select: none; -webkit-user-drag: none;
 }
+
+.ptr__label {
+  flex: 1 1 0; min-width: 0; max-width: 130px; margin-top: 14px;
+  font-size: 0.8125rem; font-weight: 700; letter-spacing: 0.01em; color: var(--ink-2); white-space: nowrap;
+  opacity: 0; transition: transform 0.3s cubic-bezier(0.2, 0.8, 0.2, 1), opacity 0.2s ease;
+}
+.ptr__label--left { text-align: right; transform: translateX(-36px); }
+.ptr__label--right { text-align: left; transform: translateX(36px); }
+.ptr--ready .ptr__label { opacity: 1; transform: translateX(0); }
+
 /* Carries on from the angle the pull reached, so there is no jump when the spin starts. */
-.ptr--spin img { animation: ptr-spin 0.9s linear infinite; }
+.ptr--spin .ptr__dome img { animation: ptr-spin 0.9s linear infinite; }
 @keyframes ptr-spin {
   from { transform: rotate(var(--ptr-rot)); }
   to { transform: rotate(calc(var(--ptr-rot) + 360deg)); }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ptr__label { transition: opacity 0.2s ease; transform: none !important; }
+  .ptr--spin .ptr__dome img { animation-duration: 2s; }
 }

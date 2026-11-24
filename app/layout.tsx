@@ -7,6 +7,7 @@ import { JoinPromptProvider } from "@/stores/join-prompt-store";
 import { InstallProvider } from "@/stores/install-store";
 import { ToastViewport } from "@/components/ui/ToastViewport";
 import { ZoomLock } from "@/components/layout/ZoomLock";
+import { SITE_URL } from "@/lib/config";
 import { PullToRefresh } from "@/components/layout/PullToRefresh";
 import { OverscrollLock } from "@/components/layout/OverscrollLock";
 import { Splash } from "@/components/layout/Splash";
@@ -46,9 +47,18 @@ const newsreader = localFont({
 });
 
 export const metadata: Metadata = {
+  metadataBase: new URL(SITE_URL),
   title: { default: "Inkspire", template: "%s | Inkspire" },
   description: "A home for stories, poems and essays, written and read by people who love words.",
   applicationName: "Inkspire",
+  openGraph: {
+    type: "website",
+    siteName: "Inkspire",
+    title: "Inkspire",
+    description: "A home for stories, poems and essays, written and read by people who love words.",
+    images: [{ url: "/logo.png" }],
+  },
+  twitter: { card: "summary_large_image" },
   // iOS "Add to Home Screen": open full screen with the right name. The manifest (app/manifest.ts) covers Android and desktop,
   // and the home screen icon comes from app/apple-icon.png.
   appleWebApp: { capable: true, title: "Inkspire", statusBarStyle: "default" },

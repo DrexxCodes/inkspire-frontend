@@ -5,7 +5,7 @@ import { usePathname } from "next/navigation";
 import { PULL, canPullOn, pullDistance, pullIntent, pullProgress, pullRotation, shouldRefresh } from "@/lib/pull-to-refresh";
 
 /** Distance from the circle's resting place (tucked under the top bar) to where it sits at `d` pixels of pull. */
-const HIDDEN_OFFSET = 56;
+const HIDDEN_OFFSET = 60; // the height of the semicircle, so it starts fully tucked under the top bar
 
 const atTop = () => (window.scrollY || document.documentElement.scrollTop || 0) <= 0;
 
@@ -33,8 +33,9 @@ interface Gesture {
 }
 
 /**
- * Pull to refresh for touch screens. Drag down from the very top of a page and the Inkspire mark appears in a
- * circle and turns as you pull; let go past the trigger and it keeps turning while the page reloads its data.
+ * Pull to refresh for touch screens. Drag down from the very top of a page and a semicircle with the Inkspire mark
+ * slides down from the top and the mark turns as you pull. Past the trigger, "Release to" and "refresh" glide in from
+ * either side; let go and the mark keeps turning while the page reloads its data.
  *
  * It stays out of the way of normal use: it only starts when the page is already at the top, the first movement
  * is a clear downward drag, and nothing shows until the finger has travelled past a dead zone. Scrolling, sideways
@@ -63,19 +64,22 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
       if (!el) return;
       const p = pullProgress(distance);
       el.classList.toggle("ptr--animating", animate);
-      el.style.transform = `translateY(${distance - HIDDEN_OFFSET}px) scale(${0.6 + 0.4 * p})`;
+      el.style.transform = `translateY(${distance - HIDDEN_OFFSET}px) scale(${0.7 + 0.3 * p})`;
+      // "Release to refresh" glides in from both sides once letting go would refresh.
+      el.classList.toggle("ptr--ready", !refreshing && shouldRefresh(distance));
       el.style.opacity = String(Math.min(1, distance / 32));
       el.style.setProperty("--ptr-rot", `${pullRotation(distance)}deg`);
     };
 
     const retract = () => {
       paint(0, true);
-      node.current?.classList.remove("ptr--spin");
+      node.current?.classList.remove("ptr--spin", "ptr--ready");
     };
 
     const startRefresh = () => {
       refreshing = true;
       setStatus("Refreshing");
+      node.current?.classList.remove("ptr--ready");
       node.current?.classList.add("ptr--spin");
       paint(PULL.hold, true);
       setEpoch((n) => n + 1); // remount the page content, so everything loads again
@@ -153,8 +157,12 @@ export function PullToRefresh({ children }: { children: ReactNode }) {
   return (
     <>
       <div ref={node} className="ptr" aria-hidden="true">
-        {/* eslint-disable-next-line @next/next/no-img-element */}
-        <img src="/mark.png" alt="" draggable={false} />
+        <span className="ptr__label ptr__label--left">Release to</span>
+        <div className="ptr__dome">
+          {/* eslint-disable-next-line @next/next/no-img-element */}
+          <img src="/mark.png" alt="" draggable={false} />
+        </div>
+        <span className="ptr__label ptr__label--right">refresh</span>
       </div>
       <div className="visually-hidden" role="status" aria-live="polite">
         {status}
